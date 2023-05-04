@@ -156,7 +156,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                 />
 
                 <div>
-                  <LabelStyle>Description</LabelStyle>
+                  <LabelStyle>Descripción</LabelStyle>
                   <QuillEditor
                     simple
                     id="product-description"
