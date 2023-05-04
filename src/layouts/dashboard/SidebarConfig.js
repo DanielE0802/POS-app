@@ -63,6 +63,21 @@ const sidebarConfig = [
         ]
       },
 
+      {
+        title: 'Inventario',
+        path: PATH_DASHBOARD.inventory.root,
+        icon: ICONS.cart,
+        children: [
+          { title: 'shop', path: PATH_DASHBOARD.eCommerce.shop },
+          { title: 'product', path: PATH_DASHBOARD.eCommerce.productById },
+          { title: 'list', path: PATH_DASHBOARD.eCommerce.list },
+          { title: 'Crear producto', path: PATH_DASHBOARD.inventory.newProduct },
+          { title: 'Editar producto', path: PATH_DASHBOARD.eCommerce.editById },
+          { title: 'checkout', path: PATH_DASHBOARD.eCommerce.checkout },
+          { title: 'invoice', path: PATH_DASHBOARD.eCommerce.invoice }
+        ]
+      },
+
       // MANAGEMENT : E-COMMERCE
       {
         title: 'e-commerce',

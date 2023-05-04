@@ -65,6 +65,12 @@ export const PATH_DASHBOARD = {
     checkout: path(ROOTS_DASHBOARD, '/e-commerce/checkout'),
     invoice: path(ROOTS_DASHBOARD, '/e-commerce/invoice')
   },
+
+  inventory: {
+    root: path(ROOTS_DASHBOARD, '/inventory'),
+    newProduct: path(ROOTS_DASHBOARD, '/inventory/product/new')
+  },
+
   blog: {
     root: path(ROOTS_DASHBOARD, '/blog'),
     posts: path(ROOTS_DASHBOARD, '/blog/posts'),

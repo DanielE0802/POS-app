@@ -97,6 +97,19 @@ export default function Router() {
           ]
         },
         {
+          path: 'inventory',
+          children: [
+            { path: '/', element: <Navigate to="/dashboard/inventory" replace /> },
+            { path: 'shop', element: <EcommerceShop /> },
+            { path: 'product/:name', element: <EcommerceProductDetails /> },
+            { path: 'list', element: <EcommerceProductList /> },
+            { path: 'product/new', element: <InventoryProductCreate /> },
+            { path: 'product/:name/edit', element: <EcommerceProductCreate /> },
+            { path: 'checkout', element: <EcommerceCheckout /> },
+            { path: 'invoice', element: <EcommerceInvoice /> }
+          ]
+        },
+        {
           path: 'user',
           children: [
             { path: '/', element: <Navigate to="/dashboard/user/profile" replace /> },
@@ -189,6 +202,7 @@ const Chat = Loadable(lazy(() => import('../pages/dashboard/Chat')));
 const Mail = Loadable(lazy(() => import('../pages/dashboard/Mail')));
 const Calendar = Loadable(lazy(() => import('../pages/dashboard/Calendar')));
 const Kanban = Loadable(lazy(() => import('../pages/dashboard/Kanban')));
+const InventoryProductCreate = Loadable(lazy(() => import('../pages/dashboard/InventoryProductCreate')));
 // Main
 const ComingSoon = Loadable(lazy(() => import('../pages/ComingSoon')));
 const Maintenance = Loadable(lazy(() => import('../pages/Maintenance')));

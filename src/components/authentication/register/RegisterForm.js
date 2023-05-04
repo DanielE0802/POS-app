@@ -24,10 +24,16 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   const RegisterSchema = Yup.object().shape({
-    firstName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('First name required'),
-    lastName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Last name required'),
-    email: Yup.string().email('Email must be a valid email address').required('Email is required'),
-    password: Yup.string().required('Password is required')
+    firstName: Yup.string()
+      .min(3, 'Ingrese un nombre valido')
+      .max(50, 'Ingrese un nombre valido')
+      .required('Ingrese el nombre'),
+    lastName: Yup.string()
+      .min(3, 'Ingrese un apellido valido')
+      .max(50, 'Ingrese un apellido más corto')
+      .required('Ingrese el apellido'),
+    email: Yup.string().email('Ingrese un correo valido').required('Correo es requerido'),
+    password: Yup.string().required('La contraseña es requerida')
   });
 
   const formik = useFormik({
@@ -73,7 +79,7 @@ export default function RegisterForm() {
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
               fullWidth
-              label="First name"
+              label="Nombre"
               {...getFieldProps('firstName')}
               error={Boolean(touched.firstName && errors.firstName)}
               helperText={touched.firstName && errors.firstName}
@@ -81,7 +87,7 @@ export default function RegisterForm() {
 
             <TextField
               fullWidth
-              label="Last name"
+              label="Apellido"
               {...getFieldProps('lastName')}
               error={Boolean(touched.lastName && errors.lastName)}
               helperText={touched.lastName && errors.lastName}
@@ -92,7 +98,7 @@ export default function RegisterForm() {
             fullWidth
             autoComplete="username"
             type="email"
-            label="Email address"
+            label="Correo electrónico"
             {...getFieldProps('email')}
             error={Boolean(touched.email && errors.email)}
             helperText={touched.email && errors.email}
@@ -102,7 +108,7 @@ export default function RegisterForm() {
             fullWidth
             autoComplete="current-password"
             type={showPassword ? 'text' : 'password'}
-            label="Password"
+            label="Contraseña"
             {...getFieldProps('password')}
             InputProps={{
               endAdornment: (
@@ -118,7 +124,7 @@ export default function RegisterForm() {
           />
 
           <LoadingButton fullWidth size="large" type="submit" variant="contained" loading={isSubmitting}>
-            Register
+            Registrarse
           </LoadingButton>
         </Stack>
       </Form>

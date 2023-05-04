@@ -48,18 +48,18 @@ export default function Register() {
   const { method } = useAuth();
 
   return (
-    <RootStyle title="Register | Minimal-UI">
+    <RootStyle title="Register">
       <AuthLayout>
-        Already have an account? &nbsp;
-        <Link underline="none" variant="subtitle2" component={RouterLink} to={PATH_AUTH.login}>
-          Login
+        ¿Ya tienes cuenta? &nbsp;
+        <Link underline="none" variant="subtitle2" component={RouterLink} to="/">
+          Iniciar sesión
         </Link>
       </AuthLayout>
 
       <MHidden width="mdDown">
         <SectionStyle>
           <Typography variant="h3" sx={{ px: 5, mt: 10, mb: 5 }}>
-            Manage the job more effectively with Minimal
+            Sistema de Contabilidad y POS para impulsar tu negocio
           </Typography>
           <img alt="register" src="/static/illustrations/illustration_register.png" />
         </SectionStyle>
@@ -70,9 +70,9 @@ export default function Register() {
           <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h4" gutterBottom>
-                Get started absolutely free.
+                Comience completamente gratis
               </Typography>
-              <Typography sx={{ color: 'text.secondary' }}>Free forever. No credit card needed.</Typography>
+              <Typography sx={{ color: 'text.secondary' }}>No necesita tarjeta de credito</Typography>
             </Box>
             <Tooltip title={capitalCase(method)}>
               <Box component="img" src={`/static/auth/ic_${method}.png`} sx={{ width: 32, height: 32 }} />
@@ -84,22 +84,22 @@ export default function Register() {
           <RegisterForm />
 
           <Typography variant="body2" align="center" sx={{ color: 'text.secondary', mt: 3 }}>
-            By registering, I agree to Minimal&nbsp;
+            Al registrarse aceptas terminos y condiciones. Por favor lea nuestros&nbsp;
             <Link underline="always" color="text.primary" href="#">
-              Terms of Service
+              Terminos y condiciones
             </Link>
-            &nbsp;and&nbsp;
+            &nbsp;y&nbsp;
             <Link underline="always" color="text.primary" href="#">
-              Privacy Policy
+              Politica de privacidad
             </Link>
             .
           </Typography>
 
           <MHidden width="smUp">
             <Typography variant="subtitle2" sx={{ mt: 3, textAlign: 'center' }}>
-              Already have an account?&nbsp;
+              ¿Ya tienes cuenta?&nbsp;
               <Link to={PATH_AUTH.login} component={RouterLink}>
-                Login
+                Iniciar sesión
               </Link>
             </Typography>
           </MHidden>

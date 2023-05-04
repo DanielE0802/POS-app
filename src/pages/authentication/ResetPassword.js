@@ -47,7 +47,7 @@ export default function ResetPassword() {
               <ResetPasswordForm onSent={() => setSent(true)} onGetEmail={(value) => setEmail(value)} />
 
               <Button fullWidth size="large" component={RouterLink} to="/" sx={{ mt: 1 }}>
-                Back
+                Atrás
               </Button>
             </>
           ) : (
@@ -58,14 +58,14 @@ export default function ResetPassword() {
                 Solicitud enviada con éxito
               </Typography>
               <Typography>
-                We have sent a confirmation email to &nbsp;
+                Hemos enviado un correo electrónico de confirmación a &nbsp;
                 <strong>{email}</strong>
                 <br />
-                Please check your email.
+                Por favor revise su correo electrónico.
               </Typography>
 
-              <Button size="large" variant="contained" component={RouterLink} to={PATH_AUTH.login} sx={{ mt: 5 }}>
-                Back
+              <Button size="large" variant="contained" component={RouterLink} to="/" sx={{ mt: 5 }}>
+                Atrás
               </Button>
             </Box>
           )}
