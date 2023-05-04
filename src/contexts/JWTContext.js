@@ -1,7 +1,7 @@
 import { createContext, useEffect, useReducer } from 'react';
 import PropTypes from 'prop-types';
 // utils
-import axios from '../utils/axios';
+import axiosInstance from '../utils/axios';
 import { isValidToken, setSession } from '../utils/jwt';
 
 // ----------------------------------------------------------------------
@@ -52,7 +52,7 @@ const reducer = (state, action) => (handlers[action.type] ? handlers[action.type
 const AuthContext = createContext({
   ...initialState,
   method: 'jwt',
-  login: () => Promise.resolve(),
+  login: () => Promise.resolve,
   logout: () => Promise.resolve(),
   register: () => Promise.resolve()
 });
@@ -72,7 +72,7 @@ function AuthProvider({ children }) {
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
 
-          const response = await axios.get('/api/account/my-account');
+          const response = await axiosInstance.get('/api/account/my-account');
           const { user } = response.data;
 
           dispatch({
@@ -107,7 +107,7 @@ function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const response = await axios.post('/api/account/login', {
+    const response = await axiosInstance.post('/api/account/login', {
       email,
       password
     });
@@ -123,7 +123,7 @@ function AuthProvider({ children }) {
   };
 
   const register = async (email, password, firstName, lastName) => {
-    const response = await axios.post('/api/account/register', {
+    const response = await axiosInstance.post('/api/account/register', {
       email,
       password,
       firstName,

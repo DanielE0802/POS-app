@@ -47,69 +47,48 @@ const ContentStyle = styled('div')(({ theme }) => ({
 export default function Login() {
   const { method, login } = useAuth();
 
-  const handleLoginAuth0 = async () => {
-    try {
-      await login();
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   return (
-    <RootStyle title="Login | Minimal-UI">
+    <RootStyle title="Login">
       <AuthLayout>
-        Don’t have an account? &nbsp;
+        ¿No tienes una cuenta? &nbsp;
         <Link underline="none" variant="subtitle2" component={RouterLink} to={PATH_AUTH.register}>
-          Get started
+          Registrate
         </Link>
       </AuthLayout>
 
       <MHidden width="mdDown">
         <SectionStyle>
           <Typography variant="h3" sx={{ px: 5, mt: 10, mb: 5 }}>
-            Hi, Welcome Back
+            ¡Bienvenido!
           </Typography>
           <img src="/static/illustrations/illustration_login.png" alt="login" />
         </SectionStyle>
       </MHidden>
-
       <Container maxWidth="sm">
         <ContentStyle>
           <Stack direction="row" alignItems="center" sx={{ mb: 5 }}>
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h4" gutterBottom>
-                Sign in to Minimal
+                Iniciar sesión
               </Typography>
-              <Typography sx={{ color: 'text.secondary' }}>Enter your details below.</Typography>
+              <Typography sx={{ color: 'text.secondary' }}>Introduzca sus datos </Typography>
             </Box>
-
             <Tooltip title={capitalCase(method)}>
               <Box component="img" src={`/static/auth/ic_${method}.png`} sx={{ width: 32, height: 32 }} />
             </Tooltip>
           </Stack>
-
-          {method === 'firebase' && <AuthFirebaseSocials />}
-
-          <Alert severity="info" sx={{ mb: 3 }}>
-            Use email : <strong>demo@minimals.cc</strong> / password :<strong>&nbsp;demo1234</strong>
-          </Alert>
-
-          {method !== 'auth0' ? (
-            <LoginForm />
-          ) : (
-            <Button fullWidth size="large" type="submit" variant="contained" onClick={handleLoginAuth0}>
-              Login
-            </Button>
-          )}
-
-          <MHidden width="smUp">
+          {
+            // method === 'firebase' && <AuthFirebaseSocials />
+          }
+          <LoginForm />
+          <Box width="smUp">
             <Typography variant="body2" align="center" sx={{ mt: 3 }}>
-              Don’t have an account?&nbsp;
+              ¿No tienes una cuenta?&nbsp;
               <Link variant="subtitle2" component={RouterLink} to={PATH_AUTH.register}>
-                Get started
+                Registrate
               </Link>
             </Typography>
-          </MHidden>
+          </Box>
         </ContentStyle>
       </Container>
     </RootStyle>

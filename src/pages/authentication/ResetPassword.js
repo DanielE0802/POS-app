@@ -30,7 +30,7 @@ export default function ResetPassword() {
   const [sent, setSent] = useState(false);
 
   return (
-    <RootStyle title="Reset Password | Minimal UI">
+    <RootStyle title="Reset Password">
       <LogoOnlyLayout />
 
       <Container>
@@ -38,16 +38,15 @@ export default function ResetPassword() {
           {!sent ? (
             <>
               <Typography variant="h3" paragraph>
-                Forgot your password?
+                ¿Olvidaste tu contraseña?
               </Typography>
               <Typography sx={{ color: 'text.secondary', mb: 5 }}>
-                Please enter the email address associated with your account and We will email you a link to reset your
-                password.
+                Por favor ingresa tu correo electrónico para recibir un enlace para crear una nueva contraseña.
               </Typography>
 
               <ResetPasswordForm onSent={() => setSent(true)} onGetEmail={(value) => setEmail(value)} />
 
-              <Button fullWidth size="large" component={RouterLink} to={PATH_AUTH.login} sx={{ mt: 1 }}>
+              <Button fullWidth size="large" component={RouterLink} to="/" sx={{ mt: 1 }}>
                 Back
               </Button>
             </>
@@ -56,7 +55,7 @@ export default function ResetPassword() {
               <SentIcon sx={{ mb: 5, mx: 'auto', height: 160 }} />
 
               <Typography variant="h3" gutterBottom>
-                Request sent successfully
+                Solicitud enviada con éxito
               </Typography>
               <Typography>
                 We have sent a confirmation email to &nbsp;

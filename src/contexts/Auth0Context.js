@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { Auth0Client } from '@auth0/auth0-spa-js';
 //
 import { auth0Config } from '../config';
-
+import { useContext } from 'react';
+import { AuthContext } from './JWTContext';
 // ----------------------------------------------------------------------
 
 let auth0Client = null;
