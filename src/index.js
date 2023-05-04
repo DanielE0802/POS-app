@@ -1,5 +1,4 @@
 // mock api
-import './_apis_';
 
 // i18n
 import './locales/i18n';
