@@ -36,7 +36,7 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   const LoginSchema = Yup.object().shape({
-    email: Yup.string().email('Email must be a valid email address').required('Ingrese su correo'),
+    email: Yup.string(),
     password: Yup.string().required('Ingrese su contraseña')
   });
 
@@ -49,7 +49,8 @@ export default function LoginForm() {
     validationSchema: LoginSchema,
     onSubmit: async (values, { setErrors, setSubmitting, resetForm }) => {
       try {
-        await login(values.email, values.password);
+        const resp = await login(values.email, values.password);
+        console.log(resp);
         enqueueSnackbar('Login success', {
           variant: 'success',
           action: (key) => (

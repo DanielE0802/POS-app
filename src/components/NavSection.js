@@ -124,17 +124,19 @@ function NavItem({ item, active, isShow }) {
                       <Box
                         component="span"
                         sx={{
-                          width: 4,
-                          height: 4,
+                          width: 0,
+                          height: 0,
                           display: 'flex',
-                          borderRadius: '50%',
+                          borderRadius: '8px',
                           alignItems: 'center',
                           justifyContent: 'center',
+                          marginRight: '-20px',
                           bgcolor: 'text.disabled',
                           transition: (theme) => theme.transitions.create('transform'),
                           ...(isActiveSub && {
-                            transform: 'scale(2)',
-                            bgcolor: 'primary.main'
+                            bgcolor: 'primary.main',
+                            width: 3.5,
+                            height: 15
                           })
                         }}
                       />

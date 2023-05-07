@@ -73,7 +73,7 @@ export default function ChatAccount() {
 
           <Box sx={{ ml: 2, mr: 3 }}>
             <Typography noWrap variant="subtitle1">
-              {user.displayName}
+              {user.displayName || ''}
             </Typography>
             <Typography noWrap variant="body2" sx={{ color: 'text.secondary' }}>
               {user.email}

@@ -19,6 +19,11 @@ export const auth0Config = {
   domain: process.env.REACT_APP_AUTH0_DOMAIN
 };
 
+export const JWTconfig = {
+  apiUrl: process.env.REACT_APP_API_URL,
+  apiV: process.env.REACT_APP_API_VERSION
+};
+
 export const mapConfig = process.env.REACT_APP_MAP_MAPBOX;
 
 export const googleAnalyticsConfig = process.env.REACT_APP_GA_MEASUREMENT_ID;
