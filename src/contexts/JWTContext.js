@@ -68,12 +68,24 @@ function AuthProvider({ children }) {
     const initialize = async () => {
       try {
         const accessToken = window.localStorage.getItem('accessToken');
+        console.log(`access token${accessToken}`);
 
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
 
-          const response = await axiosInstance.get('/api/account/my-account');
-          const { user } = response.data;
+          const response = await axiosInstance.get('/auth/my-account');
+          // const { user } = response.data;
+          const user = {
+            id: 1,
+            displayName: response.data.username,
+            email: response.data.email,
+            photoURL: null,
+            phoneNumber: null,
+            country: null,
+            address: null,
+            state: null,
+            city: null
+          };
 
           dispatch({
             type: 'INITIALIZE',
@@ -107,11 +119,23 @@ function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const response = await axiosInstance.post('/api/account/login', {
-      email,
+    const response = await axiosInstance.post('/auth/login', {
+      username: email,
       password
     });
-    const { accessToken, user } = response.data;
+    console.log(response);
+    // const { accessToken, user } = response.data;
+    const accessToken = response.data;
+    const user = {
+      id: 1,
+      displayName: 'admin',
+      email: 'soporte@gmail.com',
+      password: 'admin',
+      photoURL: 'https://i.pravatar.cc/300',
+      phoneNumber: null,
+      country: null,
+      address: null
+    };
 
     setSession(accessToken);
     dispatch({
@@ -123,11 +147,10 @@ function AuthProvider({ children }) {
   };
 
   const register = async (email, password, firstName, lastName) => {
-    const response = await axiosInstance.post('/api/account/register', {
+    const response = await axiosInstance.post('/auth/register', {
       email,
       password,
-      firstName,
-      lastName
+      username: firstName
     });
     const { accessToken, user } = response.data;
 

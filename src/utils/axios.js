@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { JWTconfig } from '../config';
 
 // ----------------------------------------------------------------------
 
 const axiosInstance = axios.create({
-  baseURL: '/'
+  baseURL: `${JWTconfig.apiUrl}/${JWTconfig.apiV}`
 });
 
 axiosInstance.interceptors.response.use(

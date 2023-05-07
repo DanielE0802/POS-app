@@ -22,7 +22,11 @@ const ICONS = {
   ecommerce: getIcon('ic_ecommerce'),
   analytics: getIcon('ic_analytics'),
   dashboard: getIcon('ic_dashboard'),
-  booking: getIcon('ic_booking')
+  booking: getIcon('ic_booking'),
+  inventory: getIcon('ic_inventory'),
+  pos: getIcon('ic_pos'),
+  sell: getIcon('ic_sell'),
+  shopping: getIcon('ic_shopping')
 };
 
 const sidebarConfig = [
@@ -46,13 +50,13 @@ const sidebarConfig = [
   // MANAGEMENT
   // ----------------------------------------------------------------------
   {
-    subheader: 'management',
+    subheader: '',
     items: [
       // MANAGEMENT : USER
       {
-        title: 'user',
+        title: 'POS',
         path: PATH_DASHBOARD.user.root,
-        icon: ICONS.user,
+        icon: ICONS.pos,
         children: [
           { title: 'profile', path: PATH_DASHBOARD.user.profile },
           { title: 'cards', path: PATH_DASHBOARD.user.cards },
@@ -66,7 +70,7 @@ const sidebarConfig = [
       {
         title: 'Inventario',
         path: PATH_DASHBOARD.inventory.root,
-        icon: ICONS.cart,
+        icon: ICONS.inventory,
         children: [
           { title: 'shop', path: PATH_DASHBOARD.eCommerce.shop },
           { title: 'product', path: PATH_DASHBOARD.eCommerce.productById },
@@ -80,9 +84,9 @@ const sidebarConfig = [
 
       // MANAGEMENT : E-COMMERCE
       {
-        title: 'e-commerce',
+        title: 'Reportes',
         path: PATH_DASHBOARD.eCommerce.root,
-        icon: ICONS.cart,
+        icon: ICONS.analytics,
         children: [
           { title: 'shop', path: PATH_DASHBOARD.eCommerce.shop },
           { title: 'product', path: PATH_DASHBOARD.eCommerce.productById },
@@ -96,9 +100,19 @@ const sidebarConfig = [
 
       // MANAGEMENT : BLOG
       {
-        title: 'blog',
+        title: 'Venta',
         path: PATH_DASHBOARD.blog.root,
-        icon: ICONS.blog,
+        icon: ICONS.sell,
+        children: [
+          { title: 'posts', path: PATH_DASHBOARD.blog.posts },
+          { title: 'post', path: PATH_DASHBOARD.blog.postById },
+          { title: 'new post', path: PATH_DASHBOARD.blog.newPost }
+        ]
+      },
+      {
+        title: 'Compras',
+        path: PATH_DASHBOARD.blog.root,
+        icon: ICONS.shopping,
         children: [
           { title: 'posts', path: PATH_DASHBOARD.blog.posts },
           { title: 'post', path: PATH_DASHBOARD.blog.postById },
