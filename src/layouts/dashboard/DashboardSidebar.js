@@ -8,7 +8,7 @@ import { Box, Link, Stack, Button, Drawer, Tooltip, Typography, CardActionArea }
 import useAuth from '../../hooks/useAuth';
 import useCollapseDrawer from '../../hooks/useCollapseDrawer';
 // routes
-import { PATH_DASHBOARD, PATH_DOCS } from '../../routes/paths';
+import { PATH_DASHBOARD } from '../../routes/paths';
 // components
 import Logo from '../../components/Logo';
 import MyAvatar from '../../components/MyAvatar';
@@ -173,7 +173,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
               <br /> Please check our docs
             </Typography>
           </div>
-          <Button href={PATH_DOCS} target="_blank" variant="contained">
+          <Button href="" target="_blank" variant="contained">
             Documentation
           </Button>
         </Stack>

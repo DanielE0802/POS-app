@@ -7,7 +7,7 @@ import { ListItemAvatar, Typography, ListItemText, Avatar, ListItemButton } from
 // hooks
 import useIsMountedRef from '../../hooks/useIsMountedRef';
 // utils
-import axios from '../../utils/axios';
+import axios from '../../api/axios';
 import { fToNow } from '../../utils/formatTime';
 // components
 import Scrollbar from '../../components/Scrollbar';

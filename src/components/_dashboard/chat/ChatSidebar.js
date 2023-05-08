@@ -11,7 +11,7 @@ import { Box, useMediaQuery } from '@material-ui/core';
 // redux
 import { useSelector } from '../../../redux/store';
 // utils
-import axios from '../../../utils/axios';
+import axios from '../../../api/axios';
 // routes
 import { PATH_DASHBOARD } from '../../../routes/paths';
 //

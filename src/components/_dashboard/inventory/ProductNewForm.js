@@ -2,7 +2,7 @@ import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import { useSnackbar } from 'notistack5';
 import { useNavigate } from 'react-router-dom';
-import { useCallback } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { Form, FormikProvider, useFormik } from 'formik';
 // material
 import { styled } from '@material-ui/core/styles';
@@ -26,6 +26,8 @@ import {
   FormControlLabel
 } from '@material-ui/core';
 // utils
+import Quagga from 'quagga';
+import Webcam from 'react-webcam';
 import fakeRequest from '../../../utils/fakeRequest';
 // routes
 import { PATH_DASHBOARD } from '../../../routes/paths';
@@ -58,7 +60,6 @@ const TAGS_OPTION = [
   'Snatch',
   '3 Idiots'
 ];
-
 const LabelStyle = styled(Typography)(({ theme }) => ({
   ...theme.typography.subtitle2,
   color: theme.palette.text.secondary,
@@ -140,6 +141,41 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     setFieldValue('images', filteredItems);
   };
 
+  const webcamRef = useRef(null);
+
+  useEffect(() => {
+    const startScanner = () => {
+      Quagga.init(
+        {
+          inputStream: {
+            name: 'Live',
+            type: 'LiveStream',
+            target: webcamRef.current.video
+          },
+          decoder: {
+            readers: ['ean_reader'] // Puedes ajustar los tipos de códigos de barras a escanear
+          }
+        },
+        (err) => {
+          if (err) {
+            console.error('Error al inicializar Quagga:', err);
+          } else {
+            Quagga.start();
+          }
+        }
+      );
+
+      Quagga.onDetected((data) => {
+        console.log('Código de barras detectado:', data.codeResult.code);
+      });
+    };
+
+    startScanner();
+
+    return () => {
+      Quagga.stop();
+    };
+  }, []);
   return (
     <FormikProvider value={formik}>
       <Form noValidate autoComplete="off" onSubmit={handleSubmit}>
@@ -192,7 +228,6 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
               </Stack>
             </Card>
           </Grid>
-
           <Grid item xs={12} md={4}>
             <Stack spacing={3}>
               <Card sx={{ p: 3 }}>
@@ -290,6 +325,13 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
           </Grid>
         </Grid>
       </Form>
+      siu camara
+      <Webcam
+        audio={false}
+        mirrored // Opcional: Si quieres reflejar la vista de la cámara
+        ref={webcamRef}
+        screenshotFormat="image/jpeg" // Formato de captura de pantalla
+      />
     </FormikProvider>
   );
 }

@@ -1,8 +1,9 @@
 import { createContext, useEffect, useReducer } from 'react';
 import PropTypes from 'prop-types';
 // utils
-import axiosInstance from '../utils/axios';
+import apiClient from '../api/axios';
 import { isValidToken, setSession } from '../utils/jwt';
+import RequestService from '../api/services/service';
 
 // ----------------------------------------------------------------------
 
@@ -73,7 +74,7 @@ function AuthProvider({ children }) {
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
 
-          const response = await axiosInstance.get('/auth/my-account');
+          const response = await apiClient.get('/auth/my-account');
           // const { user } = response.data;
           const user = {
             id: 1,
@@ -119,9 +120,11 @@ function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const response = await axiosInstance.post('/auth/login', {
-      username: email,
-      password
+    const response = await RequestService.fetchLoginUser({
+      databody: {
+        username: email,
+        password
+      }
     });
     console.log(response);
     // const { accessToken, user } = response.data;
@@ -147,7 +150,7 @@ function AuthProvider({ children }) {
   };
 
   const register = async (email, password, firstName, lastName) => {
-    const response = await axiosInstance.post('/auth/register', {
+    const response = await apiClient.post('/auth/register', {
       email,
       password,
       username: firstName

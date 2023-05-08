@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { createContext, useCallback, useEffect, useReducer } from 'react';
 import { CognitoUser, CognitoUserPool, AuthenticationDetails } from 'amazon-cognito-identity-js';
 // utils
-import axios from '../utils/axios';
+import axios from '../api/axios';
 // routes
 import { PATH_AUTH } from '../routes/paths';
 //

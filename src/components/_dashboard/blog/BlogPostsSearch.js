@@ -10,7 +10,7 @@ import searchFill from '@iconify/icons-eva/search-fill';
 import { styled } from '@material-ui/core/styles';
 import { Box, Link, TextField, Typography, Autocomplete, InputAdornment } from '@material-ui/core';
 // utils
-import axios from '../../../utils/axios';
+import axios from '../../../api/axios';
 // routes
 import { PATH_DASHBOARD } from '../../../routes/paths';
 //
