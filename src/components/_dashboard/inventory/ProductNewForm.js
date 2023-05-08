@@ -167,6 +167,8 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
 
       Quagga.onDetected((data) => {
         console.log('Código de barras detectado:', data.codeResult.code);
+        setFieldValue('code', data.codeResult.code);
+        Quagga.stop();
       });
     };
 
