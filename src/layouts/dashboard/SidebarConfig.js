@@ -74,11 +74,12 @@ const sidebarConfig = [
         children: [
           { title: 'shop', path: PATH_DASHBOARD.eCommerce.shop },
           { title: 'product', path: PATH_DASHBOARD.eCommerce.productById },
-          { title: 'list', path: PATH_DASHBOARD.eCommerce.list },
+          { title: 'list', path: PATH_DASHBOARD.inventory.list },
           { title: 'Crear producto', path: PATH_DASHBOARD.inventory.newProduct },
           { title: 'Editar producto', path: PATH_DASHBOARD.eCommerce.editById },
           { title: 'checkout', path: PATH_DASHBOARD.eCommerce.checkout },
-          { title: 'invoice', path: PATH_DASHBOARD.eCommerce.invoice }
+          { title: 'invoice', path: PATH_DASHBOARD.eCommerce.invoice },
+          { title: 'Categorias', path: PATH_DASHBOARD.inventory.categories }
         ]
       },
 

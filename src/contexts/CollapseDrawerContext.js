@@ -3,6 +3,7 @@ import { createContext, useState, useEffect } from 'react';
 // material
 import { useMediaQuery } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
+import { set } from 'lodash';
 
 // ----------------------------------------------------------------------
 
@@ -37,8 +38,16 @@ function CollapseDrawerProvider({ children }) {
     }
   }, [isMobile]);
 
+  useEffect(() => {
+    const localUser = localStorage.getItem('collapse');
+    if (localUser) {
+      setCollapse({ ...collapse, click: JSON.parse(localUser) });
+    }
+  }, []);
+
   const handleToggleCollapse = () => {
     setCollapse({ ...collapse, click: !collapse.click });
+    const localUser = localStorage.setItem('collapse', !collapse.click);
   };
 
   const handleHoverEnter = () => {

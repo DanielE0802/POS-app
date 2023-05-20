@@ -33,7 +33,7 @@ const SectionStyle = styled(Card)(({ theme }) => ({
 }));
 
 const ContentStyle = styled('div')(({ theme }) => ({
-  maxWidth: 480,
+  maxWidth: 600,
   margin: 'auto',
   display: 'flex',
   minHeight: '100vh',

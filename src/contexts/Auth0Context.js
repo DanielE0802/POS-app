@@ -1,9 +1,9 @@
-import { createContext, useEffect, useReducer } from 'react';
+import { createContext, useEffect, useReducer, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Auth0Client } from '@auth0/auth0-spa-js';
 //
 import { auth0Config } from '../config';
-import { useContext } from 'react';
+
 import { AuthContext } from './JWTContext';
 // ----------------------------------------------------------------------
 
@@ -33,7 +33,7 @@ const handlers = {
 
 const reducer = (state, action) => (handlers[action.type] ? handlers[action.type](state, action) : state);
 
-const AuthContext = createContext({
+AuthContext = createContext({
   ...initialState,
   method: 'auth0',
   login: () => Promise.resolve(),

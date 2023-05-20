@@ -8,10 +8,10 @@ import createAvatar from '../utils/createAvatar';
 
 export default function MyAvatar({ ...other }) {
   const { user } = useAuth();
-
+  const avatarSrc = user.photoURL ? user.photoURL : 'user.png';
   return (
     <MAvatar
-      src={user.photoURL}
+      src={avatarSrc}
       alt={user.displayName}
       color={user.photoURL ? 'default' : createAvatar(user.displayName).color}
       {...other}

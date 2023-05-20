@@ -1,4 +1,5 @@
 // mock api
+
 // i18n
 import './locales/i18n';
 
@@ -53,6 +54,7 @@ import { AuthProvider } from './contexts/JWTContext';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
+// import './css/estilos.css';
 
 // ----------------------------------------------------------------------
 

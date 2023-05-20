@@ -2,12 +2,14 @@ import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import { useSnackbar } from 'notistack5';
 import { useNavigate } from 'react-router-dom';
-import React, { useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { NumericFormat } from 'react-number-format';
 import { Form, FormikProvider, useFormik } from 'formik';
 // material
 import { styled } from '@material-ui/core/styles';
 import { LoadingButton } from '@material-ui/lab';
 import {
+  Divider,
   Card,
   Chip,
   Grid,
@@ -23,11 +25,16 @@ import {
   Autocomplete,
   InputAdornment,
   FormHelperText,
-  FormControlLabel
+  FormControlLabel,
+  MenuItem
 } from '@material-ui/core';
 // utils
 import Quagga from 'quagga';
 import Webcam from 'react-webcam';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import { Icon } from '@iconify/react';
+import { NumericFormatCustom } from './NumericFormatCustom';
+import PopupAddVariantes from './PopupAddVariantes';
 import fakeRequest from '../../../utils/fakeRequest';
 // routes
 import { PATH_DASHBOARD } from '../../../routes/paths';
@@ -44,6 +51,8 @@ const CATEGORY_OPTION = [
   { group: 'Tailored', classify: ['Suits', 'Blazers', 'Trousers', 'Waistcoats'] },
   { group: 'Accessories', classify: ['Shoes', 'Backpacks and bags', 'Bracelets', 'Face masks'] }
 ];
+
+const TAXES_OPTIONS = [{ name: 'Ninguno (0%)' }, { name: 'IVA - (19.00%)' }, { name: 'Transporte - (10.00%)' }];
 
 const TAGS_OPTION = [
   'Toy Story 3',
@@ -98,7 +107,8 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
       inStock: Boolean(currentProduct?.inventoryType !== 'out_of_stock'),
       taxes: true,
       gender: currentProduct?.gender || GENDER_OPTION[2],
-      category: currentProduct?.category || CATEGORY_OPTION[0].classify[1]
+      category: currentProduct?.category || CATEGORY_OPTION[0].name,
+      taxesOption: currentProduct?.taxesOption || TAXES_OPTIONS[0].name
     },
     validationSchema: NewProductSchema,
     onSubmit: async (values, { setSubmitting, resetForm, setErrors }) => {
@@ -141,50 +151,84 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     setFieldValue('images', filteredItems);
   };
 
-  const webcamRef = useRef(null);
+  const handlePriceTaxes = (event) => {
+    console.log('Hola');
+    const prueba = getFieldProps('taxesOption');
+    console.log(event.target.value);
+    console.log(values.taxesOption);
+    console.log(prueba);
+  };
 
-  useEffect(() => {
-    const startScanner = () => {
-      Quagga.init(
-        {
-          inputStream: {
-            name: 'Live',
-            type: 'LiveStream',
-            target: webcamRef.current.video
-          },
-          decoder: {
-            readers: ['ean_reader'] // Puedes ajustar los tipos de códigos de barras a escanear
-          }
-        },
-        (err) => {
-          if (err) {
-            console.error('Error al inicializar Quagga:', err);
-          } else {
-            Quagga.start();
-          }
-        }
-      );
+  // const webcamRef = useRef(null);
 
-      Quagga.onDetected((data) => {
-        console.log('Código de barras detectado:', data.codeResult.code);
-        setFieldValue('code', data.codeResult.code);
-        Quagga.stop();
-      });
-    };
+  // Barcode scanner with QuaggaJS
 
-    startScanner();
+  // useEffect(() => {
+  //   const startScanner = () => {
+  //     Quagga.init(
+  //       {
+  //         inputStream: {
+  //           name: 'Live',
+  //           type: 'LiveStream',
+  //           target: webcamRef.current.video
+  //         },
+  //         decoder: {
+  //           readers: ['ean_reader'] // Puedes ajustar los tipos de códigos de barras a escanear
+  //         }
+  //       },
+  //       (err) => {
+  //         if (err) {
+  //           console.error('Error al inicializar Quagga:', err);
+  //         } else {
+  //           Quagga.start();
+  //         }
+  //       }
+  //     );
 
-    return () => {
-      Quagga.stop();
-    };
-  }, []);
+  //     Quagga.onDetected((data) => {
+  //       console.log('Código de barras detectado:', data.codeResult.code);
+  //       setFieldValue('code', data.codeResult.code);
+  //       Quagga.stop();
+  //     });
+  //   };
+
+  //   startScanner();
+
+  //   return () => {
+  //     Quagga.stop();
+  //   };
+  // }, []);
+
+  // Change product type
+  const [productType, setProductType] = useState('simple'); // State variable to track the product type
+
+  const handleProductTypeChange = (event) => {
+    setProductType(event.target.value);
+  };
+
   return (
     <FormikProvider value={formik}>
       <Form noValidate autoComplete="off" onSubmit={handleSubmit}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={8}>
             <Card sx={{ p: 3 }}>
+              <Typography variant="h4">Información general</Typography>
+              <Divider sx={{ mb: 3, mt: 0.5 }} />
               <Stack spacing={3}>
+                <Typography variant="subtitle1">
+                  Indica si manejas productos con variantes como color, talla u otra cualidad.
+                </Typography>
+
+                <RadioGroup
+                  onChange={handleProductTypeChange}
+                  defaultValue="simple"
+                  sx={{ justifyContent: 'space-evenly' }}
+                  row
+                  name="type of product"
+                >
+                  <FormControlLabel value="simple" control={<Radio />} label="Producto simple" />
+                  <FormControlLabel value="configurable" control={<Radio />} label="Producto configurable" />
+                </RadioGroup>
                 <TextField
                   fullWidth
                   label="Nombre del producto"
@@ -193,7 +237,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                   helperText={touched.name && errors.name}
                 />
 
-                <div>
+                <Stack>
                   <LabelStyle>Descripción</LabelStyle>
                   <QuillEditor
                     simple
@@ -207,9 +251,8 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                       {touched.description && errors.description}
                     </FormHelperText>
                   )}
-                </div>
-
-                <div>
+                </Stack>
+                <Stack>
                   <LabelStyle>Add Images</LabelStyle>
                   <UploadMultiFile
                     showPreview
@@ -226,7 +269,67 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                       {touched.images && errors.images}
                     </FormHelperText>
                   )}
-                </div>
+                </Stack>
+              </Stack>
+            </Card>
+            {productType === 'configurable' && (
+              <Card sx={{ p: 3, mt: 4 }}>
+                <Typography variant="h6" gutterBottom>
+                  Variantes
+                </Typography>
+                <Divider sx={{ mb: 3, mt: 0.5 }} />
+                <Typography variant="subtitle2" gutterBottom>
+                  Agrega atributos para categorizar tus productos, como talla y color.
+                </Typography>
+                <Stack spacing={3}>{productType}</Stack>
+                <PopupAddVariantes />
+              </Card>
+            )}
+            <Card sx={{ p: 3, mt: 5 }}>
+              <Typography variant="h4">Precio</Typography>
+              <Divider sx={{ mb: 3, mt: 0.5 }} />
+              <Stack spacing={3}>
+                <Typography variant="subtitle1">
+                  Indica el valor de venta y el costo de compra de tu producto.
+                </Typography>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                  <TextField
+                    fullWidth
+                    label="Precio base"
+                    {...getFieldProps('price')}
+                    name="numberformat"
+                    id="formatted-numberformat-input"
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                      inputComponent: NumericFormatCustom
+                    }}
+                  />
+                  <Icon fullWidth icon="ic:round-plus" width="60" height="60" />
+
+                  <FormControl fullWidth>
+                    <InputLabel>Impuestoo</InputLabel>
+                    <Select label="Impuesto" {...getFieldProps('taxesOption')} value={values.taxesOption}>
+                      {TAXES_OPTIONS.map((tax) => (
+                        <MenuItem key={tax.name} value={tax.name} label={tax.name}>
+                          {tax.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  <Icon fullWidth icon="material-symbols:equal-rounded" width="60" height="60" />
+
+                  <TextField
+                    fullWidth
+                    placeholder="0.00"
+                    label="Precio Total"
+                    {...getFieldProps('priceSale')}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                      type: 'number'
+                    }}
+                  />
+                </Stack>
               </Stack>
             </Card>
           </Grid>
@@ -240,19 +343,17 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                 />
 
                 <Stack spacing={3}>
-                  <TextField fullWidth label="Product Code" {...getFieldProps('code')} />
-                  <TextField fullWidth label="Product SKU" {...getFieldProps('sku')} />
+                  <TextField fullWidth label="Codigo de barras" {...getFieldProps('code')} />
+                  <TextField fullWidth label="SKU" {...getFieldProps('sku')} />
 
-                  <div>
-                    <LabelStyle>Gender</LabelStyle>
-                    <RadioGroup {...getFieldProps('gender')} row>
-                      <Stack spacing={1} direction="row">
-                        {GENDER_OPTION.map((gender) => (
-                          <FormControlLabel key={gender} value={gender} control={<Radio />} label={gender} />
-                        ))}
-                      </Stack>
-                    </RadioGroup>
-                  </div>
+                  <LabelStyle>Gender</LabelStyle>
+                  <RadioGroup {...getFieldProps('gender')} row>
+                    <Stack spacing={1} direction="row">
+                      {GENDER_OPTION.map((gender) => (
+                        <FormControlLabel key={gender} value={gender} control={<Radio />} label={gender} />
+                      ))}
+                    </Stack>
+                  </RadioGroup>
 
                   <FormControl fullWidth>
                     <InputLabel>Category</InputLabel>
@@ -287,31 +388,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
               </Card>
 
               <Card sx={{ p: 3 }}>
-                <Stack spacing={3}>
-                  <TextField
-                    fullWidth
-                    placeholder="0.00"
-                    label="Regular Price"
-                    {...getFieldProps('price')}
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                      type: 'number'
-                    }}
-                    error={Boolean(touched.price && errors.price)}
-                    helperText={touched.price && errors.price}
-                  />
-
-                  <TextField
-                    fullWidth
-                    placeholder="0.00"
-                    label="Sale Price"
-                    {...getFieldProps('priceSale')}
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                      type: 'number'
-                    }}
-                  />
-                </Stack>
+                <Stack spacing={3} />
 
                 <FormControlLabel
                   control={<Switch {...getFieldProps('taxes')} checked={values.taxes} />}
@@ -327,13 +404,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
           </Grid>
         </Grid>
       </Form>
-      siu camara
-      <Webcam
-        audio={false}
-        mirrored // Opcional: Si quieres reflejar la vista de la cámara
-        ref={webcamRef}
-        screenshotFormat="image/jpeg" // Formato de captura de pantalla
-      />
+      {/* <Webcam ref={webcamRef} /> */}
     </FormikProvider>
   );
 }

@@ -1,6 +1,7 @@
 import { createContext, useEffect, useReducer } from 'react';
 import PropTypes from 'prop-types';
 // utils
+import jwt from 'jsonwebtoken';
 import apiClient from '../api/axios';
 import { isValidToken, setSession } from '../utils/jwt';
 import RequestService from '../api/services/service';
@@ -74,19 +75,10 @@ function AuthProvider({ children }) {
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
 
-          const response = await apiClient.get('/auth/my-account');
+          const token = jwt.decode(accessToken);
+          const userId = token.id;
+          const user = RequestService.fetchGetUserById({ id: userId });
           // const { user } = response.data;
-          const user = {
-            id: 1,
-            displayName: response.data.username,
-            email: response.data.email,
-            photoURL: null,
-            phoneNumber: null,
-            country: null,
-            address: null,
-            state: null,
-            city: null
-          };
 
           dispatch({
             type: 'INITIALIZE',
@@ -122,7 +114,7 @@ function AuthProvider({ children }) {
   const login = async (email, password) => {
     const response = await RequestService.fetchLoginUser({
       databody: {
-        username: email,
+        email,
         password
       }
     });
@@ -149,12 +141,22 @@ function AuthProvider({ children }) {
     });
   };
 
-  const register = async (email, password, firstName, lastName) => {
-    const response = await apiClient.post('/auth/register', {
-      email,
-      password,
-      username: firstName
+  const register = async (email, password, firstName, lastName, dni, tel) => {
+    const dniString = dni.toString();
+    const response = await RequestService.fetchRegisterUser({
+      databody: {
+        email,
+        password,
+        profile: {
+          name: firstName,
+          lastname: lastName,
+          phone: tel,
+          dni: dniString
+        }
+      }
     });
+    // TODO: Cuando se registre me tiene que devolver el accessToken
+
     const { accessToken, user } = response.data;
 
     window.localStorage.setItem('accessToken', accessToken);

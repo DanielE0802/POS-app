@@ -36,7 +36,7 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   const LoginSchema = Yup.object().shape({
-    email: Yup.string(),
+    email: Yup.string().email('Ingrese un correo válido').required('Ingrese su correo'),
     password: Yup.string().required('Ingrese su contraseña')
   });
 

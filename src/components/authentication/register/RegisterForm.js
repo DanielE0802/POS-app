@@ -6,6 +6,7 @@ import { useFormik, Form, FormikProvider } from 'formik';
 import eyeFill from '@iconify/icons-eva/eye-fill';
 import closeFill from '@iconify/icons-eva/close-fill';
 import eyeOffFill from '@iconify/icons-eva/eye-off-fill';
+import MuiPhoneNumber from 'material-ui-phone-number';
 // material
 import { Stack, TextField, IconButton, InputAdornment, Alert } from '@material-ui/core';
 import { LoadingButton } from '@material-ui/lab';
@@ -14,7 +15,6 @@ import useAuth from '../../../hooks/useAuth';
 import useIsMountedRef from '../../../hooks/useIsMountedRef';
 //
 import { MIconButton } from '../../@material-extend';
-
 // ----------------------------------------------------------------------
 
 export default function RegisterForm() {
@@ -33,7 +33,12 @@ export default function RegisterForm() {
       .max(50, 'Ingrese un apellido más corto')
       .required('Ingrese el apellido'),
     email: Yup.string().email('Ingrese un correo valido').required('Correo es requerido'),
-    password: Yup.string().required('La contraseña es requerida')
+    password: Yup.string().required('La contraseña es requerida'),
+    tel: Yup.string(),
+    dni: Yup.string()
+      .min(10, 'Ingrese un número de Cédula de ciudadanía')
+      .max(10, 'Ingrese un número de Cédula de ciudadanía')
+      .required('Ingrese un número de Cédula de ciudadanía')
   });
 
   const formik = useFormik({
@@ -41,13 +46,15 @@ export default function RegisterForm() {
       firstName: '',
       lastName: '',
       email: '',
-      password: ''
+      password: '',
+      tel: '',
+      dni: ''
     },
     validationSchema: RegisterSchema,
     onSubmit: async (values, { setErrors, setSubmitting }) => {
       try {
-        await register(values.email, values.password, values.firstName, values.lastName);
-        enqueueSnackbar('Register success', {
+        await register(values.email, values.password, values.firstName, values.lastName, values.dni, values.tel);
+        enqueueSnackbar('Registro completado', {
           variant: 'success',
           action: (key) => (
             <MIconButton size="small" onClick={() => closeSnackbar(key)}>
@@ -84,13 +91,37 @@ export default function RegisterForm() {
               error={Boolean(touched.firstName && errors.firstName)}
               helperText={touched.firstName && errors.firstName}
             />
-
             <TextField
               fullWidth
               label="Apellido"
               {...getFieldProps('lastName')}
               error={Boolean(touched.lastName && errors.lastName)}
               helperText={touched.lastName && errors.lastName}
+            />
+          </Stack>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <MuiPhoneNumber
+              fullWidth
+              variant="outlined"
+              onChange={(value) => {
+                formik.setFieldValue('tel', value);
+              }}
+              name="tel"
+              defaultCountry="co"
+              label="teléfono"
+              regions={['south-america']}
+              error={Boolean(touched.tel && errors.tel)}
+              helperText={touched.tel && errors.tel}
+            />
+
+            <TextField
+              fullWidth
+              type="number"
+              label="Cédula de ciudadania"
+              autoComplete="dni"
+              error={Boolean(touched.dni && errors.dni)}
+              helperText={touched.dni && errors.dni}
+              {...getFieldProps('dni')}
             />
           </Stack>
 
