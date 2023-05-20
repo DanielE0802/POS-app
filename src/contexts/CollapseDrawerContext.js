@@ -37,8 +37,16 @@ function CollapseDrawerProvider({ children }) {
     }
   }, [isMobile]);
 
+  useEffect(() => {
+    const localUser = localStorage.getItem('collapse');
+    if (localUser) {
+      setCollapse({ ...collapse, click: JSON.parse(localUser) });
+    }
+  }, []);
+
   const handleToggleCollapse = () => {
     setCollapse({ ...collapse, click: !collapse.click });
+    const localUser = localStorage.setItem('collapse', !collapse.click);
   };
 
   const handleHoverEnter = () => {
