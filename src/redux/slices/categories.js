@@ -9,6 +9,7 @@ import RequestService from '../../api/services/service';
 const initialState = {
   isLoading: false,
   error: false,
+  categories: [],
   products: [],
   product: null,
   sortBy: null,
@@ -31,7 +32,7 @@ const initialState = {
 };
 
 const slice = createSlice({
-  name: 'product',
+  name: 'categories',
   initialState,
   reducers: {
     // START LOADING
@@ -46,20 +47,19 @@ const slice = createSlice({
     },
 
     // GET PRODUCTS
-    getProductsSuccess(state, action) {
+    getCategories(state, action) {
+      state.isLoading = false;
+      state.categories = action.payload;
+    },
+
+    getProducts(state, action) {
       state.isLoading = false;
       state.products = action.payload;
     },
 
-    // GET PRODUCT
-    getProductSuccess(state, action) {
-      state.isLoading = false;
-      state.product = action.payload;
-    },
-
     // DELETE PRODUCT
     deleteProduct(state, action) {
-      state.products = reject(state.products, { id: action.payload });
+      state.categories = reject(state.categories, { id: action.payload });
     },
 
     //  SORT & FILTER PRODUCTS
@@ -214,12 +214,12 @@ export const {
 
 // ----------------------------------------------------------------------
 
-export function getProducts() {
+export function getCategories() {
   return async (dispatch) => {
     dispatch(slice.actions.startLoading());
     try {
-      const response = await RequestService.getProducts();
-      dispatch(slice.actions.getProductsSuccess(response.data));
+      const response = await RequestService.getCategories();
+      dispatch(slice.actions.getCategories(response.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
@@ -228,14 +228,12 @@ export function getProducts() {
 
 // ----------------------------------------------------------------------
 
-export function getProduct(name) {
+export function getProductsInCategory(name) {
   return async (dispatch) => {
     dispatch(slice.actions.startLoading());
     try {
-      const response = await axios.get('/api/products/product', {
-        params: { name }
-      });
-      dispatch(slice.actions.getProductSuccess(response.data.product));
+      const response = await RequestService.getProducts(name);
+      dispatch(slice.actions.getProducts(response.data));
     } catch (error) {
       console.error(error);
       dispatch(slice.actions.hasError(error));

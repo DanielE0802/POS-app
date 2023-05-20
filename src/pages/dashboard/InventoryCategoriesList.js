@@ -1,30 +1,22 @@
-import { filter, sample } from 'lodash';
 import { Icon } from '@iconify/react';
-import { useState, useEffect, React, useCallback } from 'react';
+import { useState, useEffect, React, useRef } from 'react';
 import { sentenceCase } from 'change-case';
 
 import plusFill from '@iconify/icons-eva/plus-fill';
-import checkmarkCircle2Fill from '@iconify/icons-eva/checkmark-circle-2-fill';
 import { Link as RouterLink } from 'react-router-dom';
 // material
-import { useTheme, styled } from '@material-ui/core/styles';
+import { useTheme } from '@material-ui/core/styles';
 import {
   Box,
   Card,
-  Table,
   Button,
-  TableRow,
-  Checkbox,
-  TableBody,
-  TableCell,
   Container,
   Typography,
-  TableContainer,
-  TablePagination,
-  Stack,
   Rating,
   Pagination,
-  LinearProgress
+  Grid,
+  Skeleton,
+  CardContent
 } from '@material-ui/core';
 import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
 import {
@@ -33,15 +25,22 @@ import {
   useGridSlotComponentProps,
   getGridNumericColumnOperators
 } from '@material-ui/data-grid';
-import mockData from '../../utils/mock-data';
-import createAvatar from '../../utils/createAvatar';
-import { MIconButton, MAvatar } from '../../components/@material-extend';
-import { fPercent, fCurrency } from '../../utils/formatNumber';
+
+import { makeStyles } from '@material-ui/styles';
+
 // redux
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import Collapse from '@mui/material/Collapse';
+import { ExpandLess, ExpandMore } from '@material-ui/icons';
+
+import MenuCategories from '../../components/_dashboard/inventory/product-list/categories/MenuCategories';
+import { getCategories, getProductsInCategory } from '../../redux/slices/categories';
 import { useDispatch, useSelector } from '../../redux/store';
-import { getProducts, deleteProduct } from '../../redux/slices/product';
+import { fCurrency } from '../../utils/formatNumber';
+import { MIconButton } from '../../components/@material-extend';
 // utils
-import { fDate } from '../../utils/formatTime';
 
 // routes
 import { PATH_DASHBOARD } from '../../routes/paths';
@@ -50,24 +49,7 @@ import useSettings from '../../hooks/useSettings';
 // components
 import Page from '../../components/Page';
 import Label from '../../components/Label';
-import Scrollbar from '../../components/Scrollbar';
-import SearchNotFound from '../../components/SearchNotFound';
 import HeaderBreadcrumbs from '../../components/HeaderBreadcrumbs';
-import {
-  ProductListHead,
-  ProductListToolbar,
-  ProductMoreMenu
-} from '../../components/_dashboard/inventory/product-list';
-
-// ----------------------------------------------------------------------
-
-// const TABLE_HEAD = [
-//   { id: 'name', label: 'Product', alignRight: false },
-//   { id: 'createdAt', label: 'Create at', alignRight: false },
-//   { id: 'inventoryType', label: 'Status', alignRight: false },
-//   { id: 'price', label: 'Price', alignRight: true, numeric: true },
-//   { id: '' }
-// ];
 
 function CustomPagination() {
   const { state, apiRef } = useGridSlotComponentProps();
@@ -115,92 +97,17 @@ function RenderStock(getStock) {
   );
 }
 
-const ThumbImgStyle = styled('img')(({ theme }) => ({
-  width: 74,
-  height: 74,
-  objectFit: 'cover',
-  margin: theme.spacing(0, 2),
-  borderRadius: theme.shape.borderRadiusSm
-}));
-
-// ----------------------------------------------------------------------
-
-// function descendingComparator(a, b, orderBy) {
-//   if (b[orderBy] < a[orderBy]) {
-//     return -1;
-//   }
-//   if (b[orderBy] > a[orderBy]) {
-//     return 1;
-//   }
-//   return 0;
-// }
-
-// function getComparator(order, orderBy) {
-//   return order === 'desc'
-//     ? (a, b) => descendingComparator(a, b, orderBy)
-//     : (a, b) => -descendingComparator(a, b, orderBy);
-// }
-
-// function applySortFilter(array, comparator, query) {
-//   const stabilizedThis = array.map((el, index) => [el, index]);
-//   stabilizedThis.sort((a, b) => {
-//     const order = comparator(a[0], b[0]);
-//     if (order !== 0) return order;
-//     return a[1] - b[1];
-//   });
-
-//   if (query) {
-//     return filter(array, (_product) => _product.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-//   }
-
-//   return stabilizedThis.map((el) => el[0]);
-// }
-
-// ----------------------------------------------------------------------
-
 const columns = [
-  // OPTIONS
-  // https://material-ui.com/api/data-grid/grid-col-def/#main-content
-  // - hide: false (default)
-  // - editable: false (default)
-  // - filterable: true (default)
-  // - sortable: true (default)
-  // - disableColumnMenu: false (default)
-
-  // FIELD TYPES
-  // --------------------
-  // 'string' (default)
-  // 'number'
-  // 'date'
-  // 'dateTime'
-  // 'boolean'
-  // 'singleSelect'
-
   {
     field: 'id',
     hide: true
-  },
-  {
-    field: 'img',
-    headerName: 'Imagen',
-    width: 100,
-    sortable: false,
-    filterable: false,
-    disableColumnMenu: true,
-    align: 'center',
-    renderCell: (params) => {
-      const imgUrl =
-        'https://copservir.vtexassets.com/arquivos/ids/784090/GASEOSA-COCA-COLA-ORIGINAL_F.png?v=637964068701300000';
-      return <ThumbImgStyle variant="square" alt={params.row.name} src={imgUrl} sx={{ width: 74, height: 74 }} />;
-    }
   },
   {
     field: 'name',
     headerName: 'Nombre',
     maxWidth: 200,
     minWidth: 150,
-    flex: 1.5,
-    resizable: true
+    flex: 1.5
   },
   {
     field: 'priceSale',
@@ -252,28 +159,6 @@ const columns = [
       return RenderStock(getStock);
     }
   },
-  // {
-  //   field: 'performance',
-  //   type: 'number',
-  //   headerName: 'Performance',
-  //   width: 160,
-  //   renderCell: (params) => {
-  //     const value = params.getValue(params.id, 'performance');
-  //     return (
-  //       <Stack direction="row" alignItems="center" sx={{ px: 2, width: 1, height: 1 }}>
-  //         <LinearProgress
-  //           value={value}
-  //           variant="determinate"
-  //           color={(value < 30 && 'error') || (value > 30 && value < 70 && 'warning') || 'primary'}
-  //           sx={{ width: 1, height: 6 }}
-  //         />
-  //         <Typography variant="caption" sx={{ width: 90 }}>
-  //           {fPercent(value)}
-  //         </Typography>
-  //       </Stack>
-  //     );
-  //   }
-  // },
   {
     field: 'action',
     headerName: ' ',
@@ -314,20 +199,23 @@ function RatingInputValue({ item, applyValue }) {
   );
 }
 
-export default function InventoryProductList() {
+const useStyles = makeStyles((theme) => ({
+  root: {
+    [theme.breakpoints.up('md')]: {
+      height: 'calc(100% - 50px)'
+    }
+  }
+}));
+
+const options = ['Editar', 'Eliminar', 'Ver'];
+
+export default function InvetoryCategoriesList() {
   const { themeStretch } = useSettings();
   // const theme = useTheme();
   const dispatch = useDispatch();
-  // const [page, setPage] = useState(0);
-  // const [order, setOrder] = useState('asc');
-  // const [selected, setSelected] = useState([]);
-  // const [filterName, setFilterName] = useState('');
-  // const [rowsPerPage, setRowsPerPage] = useState(5);
-  // const [orderBy, setOrderBy] = useState('createdAt');
-  const { products } = useSelector((state) => state.product);
-
+  const { categories } = useSelector((state) => state.categories);
   useEffect(() => {
-    dispatch(getProducts());
+    dispatch(getCategories());
   }, [dispatch]);
 
   if (columns.length > 0) {
@@ -345,18 +233,38 @@ export default function InventoryProductList() {
     };
   }
 
+  const [open, setOpen] = useState(true);
+
+  const handleClick = () => {
+    setOpen(!open);
+  };
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const handleListItemClick = (event, index) => {
+    setSelectedIndex(index);
+  };
+
+  const { products } = useSelector((state) => state.categories);
+
+  useEffect(() => {
+    dispatch(getProductsInCategory());
+  }, [dispatch]);
+  const menuRef = useRef(null);
+
+  const classes = useStyles();
   return (
-    <Page title="Inventario: Productos">
-      <Container maxWidth={themeStretch ? false : 'lg'}>
+    <Page title="Inventario: Categorias" sx={{ height: '100%' }}>
+      <Container maxWidth={themeStretch ? false : 'lg'} sx={{ height: '100%' }}>
         <HeaderBreadcrumbs
-          heading="Productos"
+          heading="Categorias"
           links={[
             { name: 'Dashboard', href: PATH_DASHBOARD.root },
             {
               name: 'Inventario',
               href: PATH_DASHBOARD.inventory.root
             },
-            { name: 'Productos' }
+            { name: 'Categorias' }
           ]}
           action={
             <Button
@@ -365,24 +273,61 @@ export default function InventoryProductList() {
               to={PATH_DASHBOARD.inventory.newProduct}
               startIcon={<Icon icon={plusFill} />}
             >
-              Crear producto
+              Crear categoria
             </Button>
           }
         />
-        <DataGrid
-          checkboxSelection
-          disableSelectionOnClick
-          autoHeight
-          rows={products}
-          columns={columns}
-          pagination
-          pageSize={10}
-          rowHeight={90}
-          components={{
-            Toolbar: GridToolbar,
-            Pagination: CustomPagination
-          }}
-        />
+        <Grid className={classes.root} container spacing={2}>
+          <Grid sx={{ height: '100%' }} item xs={12} md={4}>
+            <Card>
+              {categories.length === 0 ? (
+                <Skeleton variant="rectangular" height={400} />
+              ) : (
+                <List sx={{ width: '100%', bgcolor: 'background.paper' }} component="nav">
+                  {categories.map((category) => (
+                    <ListItemButton onClick={() => setSelectedIndex(category.id)} ref={menuRef} key={category.id}>
+                      <ListItemText primary={category.name} />
+                      <MenuCategories />
+                    </ListItemButton>
+                  ))}
+                  <ListItemButton onClick={handleClick}>
+                    <ListItemText primary="categoria" />
+                    {open ? <ExpandLess /> : <ExpandMore />}
+                  </ListItemButton>
+                  <Collapse in={open} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                      <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="subcategoria" />
+                      </ListItemButton>
+                    </List>
+                  </Collapse>
+                </List>
+              )}
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={8}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                {selectedIndex === 0 && 'seleciona una categoria'}
+                <DataGrid
+                  checkboxSelection
+                  disableSelectionOnClick
+                  autoHeight
+                  rows={products}
+                  columns={columns}
+                  pagination
+                  pageSize={10}
+                  rowHeight={60}
+                  loading={products.length === 0}
+                  components={{
+                    Toolbar: GridToolbar,
+                    Pagination: CustomPagination
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
       </Container>
     </Page>
   );

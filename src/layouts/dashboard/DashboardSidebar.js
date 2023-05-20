@@ -21,7 +21,7 @@ import { DocIllustration } from '../../assets';
 
 // ----------------------------------------------------------------------
 
-const DRAWER_WIDTH = 280;
+const DRAWER_WIDTH = 240;
 const COLLAPSE_WIDTH = 102;
 
 const RootStyle = styled('div')(({ theme }) => ({
