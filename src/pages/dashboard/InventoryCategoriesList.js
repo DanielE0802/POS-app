@@ -31,9 +31,10 @@ import ListItemText from '@mui/material/ListItemText';
 import Collapse from '@mui/material/Collapse';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 
+import { connect } from 'react-redux';
 import PopupCreateCategory from '../../components/_dashboard/inventory/product-list/categories/PopupCreateCategory';
 import MenuCategories from '../../components/_dashboard/inventory/product-list/categories/MenuCategories';
-import { getCategories, getProductsInCategory } from '../../redux/slices/categories';
+import { getCategories, getProductsInCategory, switchPopupState } from '../../redux/slices/categories';
 import { useDispatch, useSelector } from '../../redux/store';
 import { fCurrency } from '../../utils/formatNumber';
 import { MIconButton } from '../../components/@material-extend';
@@ -210,7 +211,7 @@ export default function InvetoryCategoriesList() {
   const { themeStretch } = useSettings();
   // const theme = useTheme();
   const dispatch = useDispatch();
-  const { categories } = useSelector((state) => state.categories);
+  const { categories, openPopup } = useSelector((state) => state.categories);
 
   // Get categories and get products in category from API
   useEffect(() => {
@@ -226,17 +227,13 @@ export default function InvetoryCategoriesList() {
   const handleClick = () => {
     setOpen(!open);
   };
-
   // states for menu options in categories
   const [viewCategory, setViewCategory] = useState(0);
   const [editCategory, setEditCategory] = useState(0);
   const [deleteCategory, setDeleteCategory] = useState(0);
 
   // Popup create category
-  const [openPopup, setOpenPopup] = useState(false);
-  const handleClosePopup = () => {
-    setOpenPopup(false);
-  };
+  // const [openPopup, setOpenPopup] = useState(false);
 
   const { products } = useSelector((state) => state.categories);
 
@@ -255,6 +252,10 @@ export default function InvetoryCategoriesList() {
     setViewCategory(id);
   };
 
+  const handleClickPopup = () => {
+    dispatch(switchPopupState());
+  };
+
   const classes = useStyles();
   return (
     <Page title="Inventario: Categorias" sx={{ height: '100%' }}>
@@ -270,7 +271,7 @@ export default function InvetoryCategoriesList() {
             { name: 'Categorias' }
           ]}
           action={
-            <Button variant="contained" onClick={() => setOpenPopup(true)} startIcon={<Icon icon={plusFill} />}>
+            <Button variant="contained" onClick={handleClickPopup} startIcon={<Icon icon={plusFill} />}>
               Crear categoria
             </Button>
           }
@@ -359,7 +360,7 @@ export default function InvetoryCategoriesList() {
           </Grid>
         </Grid>
       </Container>
-      <PopupCreateCategory open={openPopup} handleClose={handleClosePopup} />
+      <PopupCreateCategory open={openPopup} handleClose={handleClickPopup} />
     </Page>
   );
 }

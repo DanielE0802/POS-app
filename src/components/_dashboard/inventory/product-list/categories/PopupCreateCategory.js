@@ -206,7 +206,7 @@ function PopupCreateCategory({ open, handleClose }) {
 }
 
 PopupCreateCategory.propTypes = {
-  open: PropTypes.bool,
+  open: PropTypes.func,
   handleClose: PropTypes.func
 };
 

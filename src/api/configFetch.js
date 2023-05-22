@@ -10,6 +10,14 @@ export const configGetWithToken = (url) => {
   };
 };
 
+export const configGet = (url) => ({
+  method: 'get',
+  url,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
 export const configPatchWithToken = (url, databody) => {
   const localUser = JSON.parse(localStorage.getItem('user'));
   return {

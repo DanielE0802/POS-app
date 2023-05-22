@@ -77,7 +77,9 @@ function AuthProvider({ children }) {
 
           const token = jwt.decode(accessToken);
           const userId = token.id;
-          const user = RequestService.fetchGetUserById({ id: userId });
+          console.log(userId);
+          const user = (await RequestService.fetchGetUserById({ id: userId })).data;
+          console.log(user);
           // const { user } = response.data;
 
           dispatch({

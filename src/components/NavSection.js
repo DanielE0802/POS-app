@@ -6,9 +6,25 @@ import arrowIosForwardFill from '@iconify/icons-eva/arrow-ios-forward-fill';
 import arrowIosDownwardFill from '@iconify/icons-eva/arrow-ios-downward-fill';
 // material
 import { alpha, useTheme, styled } from '@material-ui/core/styles';
-import { Box, List, Collapse, ListItemText, ListItemIcon, ListSubheader, ListItemButton } from '@material-ui/core';
-
+import {
+  Box,
+  List,
+  Collapse,
+  ListItemText,
+  ListItemIcon,
+  ListSubheader,
+  ListItemButton,
+  Tooltip,
+  Button
+} from '@material-ui/core';
+import Zoom from '@mui/material/Zoom';
 // ----------------------------------------------------------------------
+
+// states
+
+import { useDispatch } from 'react-redux';
+import { switchPopupState } from '../redux/slices/categories';
+import { switchPopupWarehouses } from '../redux/slices/warehouses';
 
 const ListSubheaderStyle = styled((props) => <ListSubheader disableSticky disableGutters {...props} />)(
   ({ theme }) => ({
@@ -63,6 +79,7 @@ function NavItem({ item, active, isShow }) {
   const isActiveRoot = active(item.path);
   const { title, path, icon, info, children } = item;
   const [open, setOpen] = useState(isActiveRoot);
+  const dispatch = useDispatch();
 
   const handleOpen = () => {
     setOpen((prev) => !prev);
@@ -78,6 +95,14 @@ function NavItem({ item, active, isShow }) {
   const activeSubStyle = {
     color: 'text.primary',
     fontWeight: 'fontWeightMedium'
+  };
+
+  const handlePopupCategory = () => {
+    dispatch(switchPopupState());
+  };
+
+  const handlePopupWarehouse = () => {
+    dispatch(switchPopupWarehouses());
   };
 
   if (children) {
@@ -136,12 +161,63 @@ function NavItem({ item, active, isShow }) {
                           ...(isActiveSub && {
                             bgcolor: 'primary.main',
                             width: 3.5,
-                            height: 15
+                            height: 12
                           })
                         }}
                       />
                     </ListItemIconStyle>
                     <ListItemText disableTypography primary={title} />
+                    {item.add ? (
+                      typeof item.add === 'boolean' ? (
+                        // Category use create popup
+
+                        <>
+                          {item.path.includes('categories') && (
+                            <Button
+                              component={RouterLink}
+                              // width={20}
+                              to={path}
+                              onClick={handlePopupCategory}
+                              variant="text"
+                              color="primary"
+                              sx={{ minWidth: 0 }}
+                            >
+                              <Tooltip TransitionComponent={Zoom} title="Crear" placement="right" arrow>
+                                <Icon icon="gala:add" width={18} height={18} />
+                              </Tooltip>
+                            </Button>
+                          )}
+                          {item.path.includes('warehouses') && (
+                            <Button
+                              component={RouterLink}
+                              // width={20}
+                              to={path}
+                              onClick={handlePopupWarehouse}
+                              variant="text"
+                              color="primary"
+                              sx={{ minWidth: 0 }}
+                            >
+                              <Tooltip TransitionComponent={Zoom} title="Crear" placement="right" arrow>
+                                <Icon icon="gala:add" width={18} height={18} />
+                              </Tooltip>
+                            </Button>
+                          )}
+                        </>
+                      ) : (
+                        <Button
+                          component={RouterLink}
+                          // width={20}
+                          to={item.add}
+                          variant="text"
+                          color="primary"
+                          sx={{ minWidth: 0 }}
+                        >
+                          <Tooltip TransitionComponent={Zoom} title="Crear" placement="right" arrow>
+                            <Icon href={item.add} icon="gala:add" width={18} height={18} />
+                          </Tooltip>
+                        </Button>
+                      )
+                    ) : null}
                   </ListItemStyle>
                 );
               })}

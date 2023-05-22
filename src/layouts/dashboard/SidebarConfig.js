@@ -72,14 +72,11 @@ const sidebarConfig = [
         path: PATH_DASHBOARD.inventory.root,
         icon: ICONS.inventory,
         children: [
-          { title: 'shop', path: PATH_DASHBOARD.eCommerce.shop },
-          { title: 'product', path: PATH_DASHBOARD.eCommerce.productById },
-          { title: 'list', path: PATH_DASHBOARD.inventory.list },
-          { title: 'Crear producto', path: PATH_DASHBOARD.inventory.newProduct },
+          { title: 'Productos', path: PATH_DASHBOARD.inventory.list, add: PATH_DASHBOARD.inventory.newProduct },
+          { title: 'Crear producto', path: PATH_DASHBOARD.inventory.newProduct, add: true },
           { title: 'Editar producto', path: PATH_DASHBOARD.eCommerce.editById },
-          { title: 'checkout', path: PATH_DASHBOARD.eCommerce.checkout },
-          { title: 'invoice', path: PATH_DASHBOARD.eCommerce.invoice },
-          { title: 'Categorias', path: PATH_DASHBOARD.inventory.categories }
+          { title: 'Categorias', path: PATH_DASHBOARD.inventory.categories, add: true },
+          { title: 'Bodegas', path: PATH_DASHBOARD.inventory.warehouses, add: true }
         ]
       },
 

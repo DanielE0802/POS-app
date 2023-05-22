@@ -24,7 +24,10 @@ import {
   Stack,
   Rating,
   Pagination,
-  LinearProgress
+  LinearProgress,
+  TextField,
+  IconButton,
+  InputAdornment
 } from '@material-ui/core';
 import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
 import {
@@ -33,6 +36,8 @@ import {
   useGridSlotComponentProps,
   getGridNumericColumnOperators
 } from '@material-ui/data-grid';
+import { Close } from '@material-ui/icons';
+import searchFill from '@iconify/icons-eva/search-fill';
 import mockData from '../../utils/mock-data';
 import createAvatar from '../../utils/createAvatar';
 import { MIconButton, MAvatar } from '../../components/@material-extend';
@@ -125,57 +130,7 @@ const ThumbImgStyle = styled('img')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-// function descendingComparator(a, b, orderBy) {
-//   if (b[orderBy] < a[orderBy]) {
-//     return -1;
-//   }
-//   if (b[orderBy] > a[orderBy]) {
-//     return 1;
-//   }
-//   return 0;
-// }
-
-// function getComparator(order, orderBy) {
-//   return order === 'desc'
-//     ? (a, b) => descendingComparator(a, b, orderBy)
-//     : (a, b) => -descendingComparator(a, b, orderBy);
-// }
-
-// function applySortFilter(array, comparator, query) {
-//   const stabilizedThis = array.map((el, index) => [el, index]);
-//   stabilizedThis.sort((a, b) => {
-//     const order = comparator(a[0], b[0]);
-//     if (order !== 0) return order;
-//     return a[1] - b[1];
-//   });
-
-//   if (query) {
-//     return filter(array, (_product) => _product.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-//   }
-
-//   return stabilizedThis.map((el) => el[0]);
-// }
-
-// ----------------------------------------------------------------------
-
 const columns = [
-  // OPTIONS
-  // https://material-ui.com/api/data-grid/grid-col-def/#main-content
-  // - hide: false (default)
-  // - editable: false (default)
-  // - filterable: true (default)
-  // - sortable: true (default)
-  // - disableColumnMenu: false (default)
-
-  // FIELD TYPES
-  // --------------------
-  // 'string' (default)
-  // 'number'
-  // 'date'
-  // 'dateTime'
-  // 'boolean'
-  // 'singleSelect'
-
   {
     field: 'id',
     hide: true
@@ -199,8 +154,7 @@ const columns = [
     headerName: 'Nombre',
     maxWidth: 200,
     minWidth: 150,
-    flex: 1.5,
-    resizable: true
+    flex: 1.5
   },
   {
     field: 'priceSale',
@@ -321,14 +275,19 @@ export default function InventoryProductList() {
   // const [page, setPage] = useState(0);
   // const [order, setOrder] = useState('asc');
   // const [selected, setSelected] = useState([]);
-  // const [filterName, setFilterName] = useState('');
+  const [filterName, setFilterName] = useState('');
   // const [rowsPerPage, setRowsPerPage] = useState(5);
   // const [orderBy, setOrderBy] = useState('createdAt');
   const { products } = useSelector((state) => state.product);
+  const [filterProducts, setFilterProducts] = useState([]);
 
   useEffect(() => {
     dispatch(getProducts());
   }, [dispatch]);
+
+  useEffect(() => {
+    setFilterProducts(products);
+  }, [products]);
 
   if (columns.length > 0) {
     const ratingColumn = columns.find((column) => column.field === 'rating');
@@ -344,6 +303,20 @@ export default function InventoryProductList() {
       filterOperators: ratingFilterOperators
     };
   }
+
+  const handleSearch = (value) => {
+    setFilterName(value);
+    console.log(products);
+    const productSearch = filter(
+      products,
+      (product) =>
+        product.name.toLowerCase().includes(value.toLowerCase()) ||
+        product.sku.toLowerCase().includes(value.toLowerCase()) ||
+        product.description.toLowerCase().includes(value.toLowerCase())
+    );
+    console.log(productSearch);
+    setFilterProducts(productSearch);
+  };
 
   return (
     <Page title="Inventario: Productos">
@@ -369,13 +342,44 @@ export default function InventoryProductList() {
             </Button>
           }
         />
+        <TextField
+          fullWidth
+          label="Buscar producto"
+          onChange={(e) => handleSearch(e.target.value)}
+          value={filterName}
+          // placeholder="Buscar producto por nombre, sku o descripción"
+          sx={{ mb: 3 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                {filterName !== '' && (
+                  <IconButton
+                    onClick={() => {
+                      setFilterName('');
+                      setFilterProducts(products);
+                    }}
+                  >
+                    <Close />
+                  </IconButton>
+                )}
+              </InputAdornment>
+            )
+          }}
+        />
+
         <DataGrid
           checkboxSelection
           disableSelectionOnClick
           autoHeight
-          rows={products}
+          rows={filterProducts}
           columns={columns}
           pagination
+          loading={products.length === 0}
           pageSize={10}
           rowHeight={90}
           components={{
