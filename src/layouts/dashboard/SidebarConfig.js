@@ -76,7 +76,8 @@ const sidebarConfig = [
           // { title: 'Crear producto', path: PATH_DASHBOARD.inventory.newProduct, add: true },
           // { title: 'Editar producto', path: PATH_DASHBOARD.eCommerce.editById },
           { title: 'Categorias', path: PATH_DASHBOARD.inventory.categories, add: true },
-          { title: 'Punto de venta', path: PATH_DASHBOARD.inventory.warehouses, add: true }
+          { title: 'Punto de venta', path: PATH_DASHBOARD.inventory.warehouses, add: true },
+          { title: 'Marcas', path: PATH_DASHBOARD.inventory.brands, add: true }
         ]
       },
 

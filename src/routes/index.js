@@ -104,7 +104,8 @@ export default function Router() {
             { path: 'product/new', element: <InventoryProductCreate /> },
             { path: 'product/:name/edit', element: <EcommerceProductCreate /> },
             { path: 'categories', element: <InventoryCategoriesList /> },
-            { path: 'warehouses', element: <InventoryWarehousesList /> }
+            { path: 'warehouses', element: <InventoryWarehousesList /> },
+            { path: 'brands', element: <InventoryBrandList /> }
           ]
         },
         {
@@ -206,7 +207,7 @@ const InventoryProductCreate = Loadable(lazy(() => import('../pages/dashboard/In
 const InventoryProductList = Loadable(lazy(() => import('../pages/dashboard/InventoryProductList')));
 const InventoryCategoriesList = Loadable(lazy(() => import('../pages/dashboard/InventoryCategoriesList')));
 const InventoryWarehousesList = Loadable(lazy(() => import('../pages/dashboard/InventoryWarehousesList')));
-
+const InventoryBrandList = Loadable(lazy(() => import('../pages/dashboard/InventoryBrandList')));
 // Main
 const ComingSoon = Loadable(lazy(() => import('../pages/ComingSoon')));
 const Maintenance = Loadable(lazy(() => import('../pages/Maintenance')));

@@ -186,7 +186,6 @@ export function getCategories() {
     dispatch(slice.actions.startLoading());
     try {
       const response = await RequestService.getCategories();
-      console.log(response.data);
       dispatch(slice.actions.getCategories(response.data));
     } catch (error) {
       dispatch(slice.actions.hasError(error));

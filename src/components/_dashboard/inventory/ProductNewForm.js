@@ -62,6 +62,7 @@ import { UploadMultiFile } from '../../upload';
 import RequestService from '../../../api/services/service';
 import { useDispatch, useSelector } from '../../../redux/store';
 import { getCategories, getProductsInCategory, switchPopupState } from '../../../redux/slices/categories';
+import PopupCreateCategory from './product-list/categories/PopupCreateCategory';
 
 // ----------------------------------------------------------------------
 const TAXES_OPTIONS = [
@@ -363,6 +364,17 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     }
     return false;
   };
+
+  const [openPopupCategory, setOpenPopupCategory] = useState(false);
+
+  const handleCloseCreateCategory = () => {
+    setOpenPopupCategory(false);
+  };
+
+  const handleClickOpenPopupCategory = () => {
+    setOpenPopupCategory(true);
+  };
+
   return (
     <FormikProvider value={formik}>
       <Form noValidate autoComplete="off" onSubmit={handleSubmit}>
@@ -518,7 +530,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                           {props.children}
                         </ul>
                         <li>
-                          <Button fullWidth>
+                          <Button onClick={handleClickOpenPopupCategory} fullWidth>
                             Crear categoria
                             <Icon style={{ marginLeft: 10 }} icon="gala:add" width={18} height={18} />
                           </Button>
@@ -687,6 +699,9 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
             <Stack spacing={3}>
               <Card sx={{ p: 3 }}>
                 <Stack>
+                  <Typography variant="h5">{values.name}</Typography>
+                  {values.barCode && <Typography variant="subtitle2"> Código: {values.barCode}</Typography>}
+                  {values.sku && <Typography variant="subtitle2"> SKU: {values.sku}</Typography>}
                   <LabelStyle>Imagen del producto</LabelStyle>
                   <UploadMultiFile
                     showPreview
@@ -729,6 +744,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
           </Grid>
         </Grid>
       </Form>
+      <PopupCreateCategory open={openPopupCategory} handleClose={handleCloseCreateCategory} />
       {/* <Webcam ref={webcamRef} /> */}
     </FormikProvider>
   );

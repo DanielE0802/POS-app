@@ -71,7 +71,8 @@ export const PATH_DASHBOARD = {
     newProduct: path(ROOTS_DASHBOARD, '/inventory/product/new'),
     list: path(ROOTS_DASHBOARD, '/inventory/products'),
     categories: path(ROOTS_DASHBOARD, '/inventory/categories'),
-    warehouses: path(ROOTS_DASHBOARD, '/inventory/warehouses')
+    warehouses: path(ROOTS_DASHBOARD, '/inventory/warehouses'),
+    brands: path(ROOTS_DASHBOARD, '/inventory/brands')
   },
 
   blog: {

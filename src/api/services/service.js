@@ -1,5 +1,11 @@
 import axios from 'axios';
-import { configGet, configGetWithToken, configPostWithToken } from '../configFetch';
+import {
+  configGet,
+  configGetWithToken,
+  configPostWithToken,
+  configPatchWithToken,
+  configDeleteWithToken
+} from '../configFetch';
 import apiClient from '../axios';
 
 class RequestService {
@@ -24,6 +30,16 @@ class RequestService {
   createCategory = async (databody) => apiClient(configPostWithToken('/category', databody));
 
   // Warehouses
+
+  // Brands
+
+  getBrands = async ({ r }) => apiClient(configGetWithToken(`/brand?r=${r}`));
+
+  createBrand = async (databody) => apiClient(configPostWithToken('/brand', databody));
+
+  editBrand = async ({ id, databody }) => apiClient(configPatchWithToken(`/brand/${id}`, databody));
+
+  deleteBrand = async ({ id }) => apiClient(configDeleteWithToken(`/brand/${id}`));
 
   // External API (deparments and cities)
 
