@@ -163,7 +163,6 @@ const columns = [
     minWidth: 140,
     flex: 1,
     renderCell: (params) => {
-      // TODO: falta que retorne el price normal
       // TODO: que muestre el precio de venta formateado segun la moneda
       const priceSale = params.getValue(params.id, 'priceSale');
       return (

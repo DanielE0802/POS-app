@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react';
-import { useState, useEffect, React, useRef } from 'react';
+import { useState, useEffect, React, useRef, Fragment } from 'react';
 import { sentenceCase } from 'change-case';
 
 import plusFill from '@iconify/icons-eva/plus-fill';
@@ -222,11 +222,11 @@ export default function InvetoryCategoriesList() {
     dispatch(getProductsInCategory());
   }, [dispatch]);
 
-  const [open, setOpen] = useState(true);
+  const [expandedCategories, setExpandedCategories] = useState([]);
 
-  const handleClick = () => {
-    setOpen(!open);
-  };
+  // const handleClick = () => {
+  //   setOpen(!open);
+  // };
   // states for menu options in categories
   const [viewCategory, setViewCategory] = useState(0);
   const [editCategory, setEditCategory] = useState(0);
@@ -247,9 +247,17 @@ export default function InvetoryCategoriesList() {
     console.log(`delete${id}`);
   };
 
-  const handleView = (id) => {
-    console.log(`view${id}`);
-    setViewCategory(id);
+  const handleClick = (categoryId) => {
+    const isExpanded = expandedCategories.includes(categoryId);
+    if (isExpanded) {
+      setExpandedCategories(expandedCategories.filter((id) => id !== categoryId));
+    } else {
+      setExpandedCategories([...expandedCategories, categoryId]);
+    }
+  };
+
+  const handleView = (categoryId) => {
+    setViewCategory(categoryId);
   };
 
   const handleClickPopup = () => {
@@ -284,22 +292,40 @@ export default function InvetoryCategoriesList() {
               ) : (
                 <List sx={{ width: '100%', bgcolor: 'background.paper' }} component="nav">
                   {categories.map((category) => (
-                    <ListItemButton onClick={() => handleView(category.id)} ref={menuRef} key={category.id}>
-                      <ListItemText primary={category.name} />
-                      <MenuCategories handleEdit={handleEdit} handleView={handleView} handleDelete={handleDelete} />
-                    </ListItemButton>
-                  ))}
-                  <ListItemButton onClick={handleClick}>
-                    <ListItemText primary="categoria" />
-                    {open ? <ExpandLess /> : <ExpandMore />}
-                  </ListItemButton>
-                  <Collapse in={open} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding>
-                      <ListItemButton sx={{ pl: 4 }}>
-                        <ListItemText primary="subcategoria" />
+                    <Fragment key={category.id}>
+                      <ListItemButton onClick={() => handleView(category.id)} ref={menuRef}>
+                        <ListItemText primary={category.name} />
+                        {category.subcategories.length > 0 ? (
+                          expandedCategories.includes(category.id) ? (
+                            <ExpandLess onClick={() => handleClick(category.id)} />
+                          ) : (
+                            <ExpandMore onClick={() => handleClick(category.id)} />
+                          )
+                        ) : null}
+                        <MenuCategories handleEdit={handleEdit} handleView={handleView} handleDelete={handleDelete} />
                       </ListItemButton>
-                    </List>
-                  </Collapse>
+                      {category.subcategories.length > 0 && (
+                        <Collapse
+                          key={`collapse-${category.id}`}
+                          in={expandedCategories.includes(category.id)}
+                          timeout="auto"
+                          unmountOnExit
+                        >
+                          <List component="div" disablePadding>
+                            {category.subcategories.map((subcategory) => (
+                              <ListItemButton
+                                onClick={() => handleView(subcategory.id)}
+                                sx={{ pl: 4 }}
+                                key={subcategory.id}
+                              >
+                                <ListItemText primary={subcategory.name} />
+                              </ListItemButton>
+                            ))}
+                          </List>
+                        </Collapse>
+                      )}
+                    </Fragment>
+                  ))}
                 </List>
               )}
             </Card>
@@ -317,13 +343,18 @@ export default function InvetoryCategoriesList() {
                           {categories.find((category) => category.id === viewCategory).name}
                         </Typography>
                         <Typography variant="body2" sx={{ mb: 1 }}>
-                          <strong>Categoria padre:</strong> parentCategory
+                          {/* TODO: se estan utilizando en las subcategorias el mismo id y necesito agregarle la categoria padre */}
+                          {categories.find((category) => category.id === viewCategory).subcategories.length > 0 ? (
+                            <strong>Categoria padre:</strong>
+                          ) : (
+                            console.log(
+                              categories.findIndex((category) => category.subcategories.id === viewCategory.id)
+                            )
+                          )}
                         </Typography>
                         <Typography variant="body2" sx={{ mb: 3 }}>
                           {/* Description for category */}
-                          {/* {categories.find((category) => category.id === viewCategory).description} */}
-                          Description for category Description for category Description for category Description for
-                          category
+                          {categories.find((category) => category.id === viewCategory).description}
                         </Typography>
                       </Grid>
                       <Grid item xs={12} md={6}>
@@ -342,7 +373,7 @@ export default function InvetoryCategoriesList() {
                       checkboxSelection
                       disableSelectionOnClick
                       autoHeight
-                      rows={products}
+                      rows={categories.find((category) => category.id === viewCategory).products}
                       columns={columns}
                       pagination
                       pageSize={10}

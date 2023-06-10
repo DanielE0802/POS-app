@@ -1,4 +1,4 @@
-import { sum, map, filter, uniqBy, reject } from 'lodash';
+import { sum, map, filter, uniqBy, reject, get } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
 // utils
 import axios from '../../api/axios';
@@ -186,7 +186,19 @@ export function getCategories() {
     dispatch(slice.actions.startLoading());
     try {
       const response = await RequestService.getCategories();
+      console.log(response.data);
       dispatch(slice.actions.getCategories(response.data));
+    } catch (error) {
+      dispatch(slice.actions.hasError(error));
+    }
+  };
+}
+
+export function createCategory(databody) {
+  return async (dispatch) => {
+    dispatch(slice.actions.startLoading());
+    try {
+      await RequestService.createCategory(databody);
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }

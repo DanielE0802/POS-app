@@ -110,7 +110,7 @@ export default function UserProfile() {
           links={[
             { name: 'Dashboard', href: PATH_DASHBOARD.root },
             { name: 'User', href: PATH_DASHBOARD.user.root },
-            { name: user.displayName }
+            { name: user.profile.name }
           ]}
         />
         <Card
@@ -121,7 +121,6 @@ export default function UserProfile() {
           }}
         >
           <ProfileCover myProfile={myProfile} />
-
           <TabsWrapperStyle>
             <Tabs
               value={currentTab}

@@ -7,15 +7,21 @@ class RequestService {
 
   fetchRegisterUser = async ({ databody }) => apiClient(configPostWithToken('/auth/register', databody));
 
+  // Users
+
   fetchGetUserById = async ({ id }) => apiClient(configGet(`/user/${id}`));
 
   // Products
 
   getProducts = async () => apiClient(configGetWithToken('/product'));
 
+  createProduct = async (databody) => apiClient(configPostWithToken('/product', databody));
+
   // Categories
 
-  getCategories = async () => apiClient(configGetWithToken('/category'));
+  getCategories = async () => apiClient(configGetWithToken('/category?r=true'));
+
+  createCategory = async (databody) => apiClient(configPostWithToken('/category', databody));
 
   // Warehouses
 

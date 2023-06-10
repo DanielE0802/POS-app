@@ -10,6 +10,15 @@ export const configGetWithToken = (url) => {
   };
 };
 
+export const configGetWithTokenParametrized = (url, param) => ({
+  method: 'get',
+  url,
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${param}`
+  }
+});
+
 export const configGet = (url) => ({
   method: 'get',
   url,

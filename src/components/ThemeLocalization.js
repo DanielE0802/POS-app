@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { ThemeProvider, createTheme, useTheme } from '@material-ui/core/styles';
 // hooks
 import { esES } from '@material-ui/data-grid';
-import useLocales from '../hooks/useLocales';
+// import useLocales from '../hooks/useLocales';
 
 // ----------------------------------------------------------------------
 
@@ -13,7 +13,7 @@ ThemeLocalization.propTypes = {
 
 export default function ThemeLocalization({ children }) {
   const defaultTheme = useTheme();
-  const { currentLang } = useLocales();
+  // const { currentLang } = useLocales();
 
   const theme = createTheme(defaultTheme, esES);
 

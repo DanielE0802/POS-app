@@ -1,7 +1,10 @@
 import { map, filter } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
 // utils
+import jwt from 'jsonwebtoken';
 import axios from '../../api/axios';
+
+import RequestService from '../../api/services/service';
 
 // ----------------------------------------------------------------------
 
@@ -136,11 +139,15 @@ export const { onToggleFollow, deleteUser } = slice.actions;
 // ----------------------------------------------------------------------
 
 export function getProfile() {
+  const accessToken = window.localStorage.getItem('accessToken');
+  const token = jwt.decode(accessToken);
+  const userId = token.id;
+
   return async (dispatch) => {
     dispatch(slice.actions.startLoading());
     try {
-      const response = await axios.get('/api/user/profile');
-      dispatch(slice.actions.getProfileSuccess(response.data.profile));
+      const user = (await RequestService.fetchGetUserById({ id: userId })).data;
+      dispatch(slice.actions.getProfileSuccess(user.profile));
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }

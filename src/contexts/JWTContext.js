@@ -79,6 +79,10 @@ function AuthProvider({ children }) {
           const userId = token.id;
           console.log(userId);
           const user = (await RequestService.fetchGetUserById({ id: userId })).data;
+          // Set user to redux
+
+          state.user = user;
+
           console.log(user);
           // const { user } = response.data;
 
@@ -120,21 +124,12 @@ function AuthProvider({ children }) {
         password
       }
     });
-    console.log(response);
-    // const { accessToken, user } = response.data;
-    const accessToken = response.data;
-    const user = {
-      id: 1,
-      displayName: 'admin',
-      email: 'soporte@gmail.com',
-      password: 'admin',
-      photoURL: 'https://i.pravatar.cc/300',
-      phoneNumber: null,
-      country: null,
-      address: null
-    };
+    setSession(response.data);
 
-    setSession(accessToken);
+    // Set user to redux
+    const token = jwt.decode(response.data);
+    const user = (await RequestService.fetchGetUserById({ id: token.id })).data;
+
     dispatch({
       type: 'LOGIN',
       payload: {

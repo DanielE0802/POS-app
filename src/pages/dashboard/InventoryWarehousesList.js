@@ -272,17 +272,17 @@ export default function WarehousesList() {
 
   const classes = useStyles();
   return (
-    <Page title="Inventario: Bodegas" sx={{ height: '100%' }}>
+    <Page title="Inventario: Punto de venta" sx={{ height: '100%' }}>
       <Container maxWidth={themeStretch ? false : 'lg'} sx={{ height: '100%' }}>
         <HeaderBreadcrumbs
-          heading="Bodegas"
+          heading="Punto de venta"
           links={[
             { name: 'Dashboard', href: PATH_DASHBOARD.root },
             {
               name: 'Inventario',
               href: PATH_DASHBOARD.inventory.root
             },
-            { name: 'Bodegas' }
+            { name: 'Punto de venta' }
           ]}
           action={
             <Button variant="contained" onClick={handleClickPopup} startIcon={<Icon icon={plusFill} />}>

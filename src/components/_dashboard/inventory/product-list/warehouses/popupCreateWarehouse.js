@@ -55,11 +55,10 @@ function PopupCreateWarehouse({ open, handleClose }) {
   const createCategorySchema = Yup.object().shape({
     name: Yup.string().required('Nombre requerido'),
     description: Yup.string().required('Descripción requerida'),
-    departament: Yup.string().required('Departamento requerido'),
-    city: Yup.string().required('Ciudad requerida'),
+    departament: Yup.object().required('Departamento requerido'),
+    city: Yup.object().required('Ciudad requerida'),
     address: Yup.string().required('Dirección requerida'),
-    phone: Yup.string().required('Teléfono requerido'),
-    status: Yup.string().required('Estado requerido')
+    phone: Yup.string().required('Teléfono requerido')
   });
   // Formmik
   const formik = useFormik({
@@ -69,10 +68,12 @@ function PopupCreateWarehouse({ open, handleClose }) {
       departament: '',
       city: '',
       address: '',
-      phone: '',
-      status: ''
+      phone: ''
     },
     validationSchema: createCategorySchema,
+    validate: (values) => {
+      console.log(values);
+    },
     onSubmit: async (values, { setSubmitting, resetForm, setErrors }) => {
       try {
         console.log(values);
@@ -108,8 +109,8 @@ function PopupCreateWarehouse({ open, handleClose }) {
   }, []);
 
   return (
-    <Dialog maxWidth="md" open={open} onClose={handleClose} TransitionComponent={Transition}>
-      <DialogTitle sx={{ mb: 2 }}>Información de la bodega</DialogTitle>
+    <Dialog maxWidth="md" open={open} onClose={handleClose}>
+      <DialogTitle sx={{ mb: 2 }}>Información del punto de venta</DialogTitle>
       <Divider sx={{ mb: 0, mt: 0.5 }} />
       <FormikProvider value={formik}>
         <Form noValidate autoComplete="off" onSubmit={handleSubmit}>
@@ -180,7 +181,7 @@ function PopupCreateWarehouse({ open, handleClose }) {
 
           <DialogActions sx={{ pt: '0 !important' }}>
             <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
-              Crear Bodega
+              Crear Punto De Venta
             </LoadingButton>
             <Button variant="outlined" onClick={handleClose}>
               Cancelar

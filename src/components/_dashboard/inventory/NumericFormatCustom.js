@@ -12,7 +12,6 @@ export const NumericFormatCustom = React.forwardRef((props, ref) => {
       onValueChange={(values) => {
         onChange({
           target: {
-            name: props.name,
             value: values.value
           }
         });
@@ -23,6 +22,5 @@ export const NumericFormatCustom = React.forwardRef((props, ref) => {
   );
 });
 NumericFormatCustom.propTypes = {
-  name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired
 };
