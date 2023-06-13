@@ -28,6 +28,7 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 
+import { useSnackbar } from 'notistack5';
 import PopupCreateBrand from '../../components/_dashboard/inventory/product-list/brands/PopupCreateBrand';
 import MenuCategories from '../../components/_dashboard/inventory/product-list/categories/MenuCategories';
 import { useDispatch, useSelector } from '../../redux/store';
@@ -43,7 +44,7 @@ import useSettings from '../../hooks/useSettings';
 import Page from '../../components/Page';
 import Label from '../../components/Label';
 import HeaderBreadcrumbs from '../../components/HeaderBreadcrumbs';
-import { getBrands, switchPopupBrands } from '../../redux/slices/brands';
+import { getBrands, switchPopupBrands, setEditBrand, setCreateBrand } from '../../redux/slices/brands';
 import RequestService from '../../api/services/service';
 
 function CustomPagination() {
@@ -159,6 +160,7 @@ const useStyles = makeStyles((theme) => ({
 export default function BrandList() {
   const { themeStretch } = useSettings();
   // const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
   const dispatch = useDispatch();
   const { brands, openPopup } = useSelector((state) => state.brands);
 
@@ -172,7 +174,6 @@ export default function BrandList() {
   // };
   // states for menu options in categories
   const [viewBrand, setViewBrand] = useState({ name: '', products: [] });
-  const [editBrand, setEditBrand] = useState(0);
   const [deleteBrand, setDeleteBrand] = useState(0);
 
   // Popup create category
@@ -181,16 +182,22 @@ export default function BrandList() {
   const menuRef = useRef(null);
 
   const handleEdit = (brand) => {
-    setEditBrand(brand);
+    dispatch(setEditBrand(brand));
     dispatch(switchPopupBrands());
   };
 
   // TODO: falta que el servicio elimine la marca
 
-  const handleDelete = (brand) => {
+  const handleDelete = async (brand) => {
     setDeleteBrand(brand.id);
-    RequestService.deleteBrand({ id: brand.id });
-    console.log(deleteBrand);
+    try {
+      const resp = await RequestService.deleteBrand({ id: brand.id });
+      enqueueSnackbar(`Marca ${resp.data.name} eliminada`, { variant: 'success' });
+    } catch (error) {
+      enqueueSnackbar('No se puede eliminar la marca porque tiene productos asociados', { variant: 'error' });
+    }
+
+    dispatch(getBrands(true));
   };
 
   const handleView = (brand) => {
@@ -198,6 +205,10 @@ export default function BrandList() {
   };
 
   const handleClickPopup = () => {
+    dispatch(switchPopupBrands());
+  };
+  const handleClickCreateBrand = () => {
+    dispatch(setCreateBrand(true));
     dispatch(switchPopupBrands());
   };
 
@@ -216,7 +227,7 @@ export default function BrandList() {
             { name: 'Marcas' }
           ]}
           action={
-            <Button variant="contained" onClick={handleClickPopup} startIcon={<Icon icon={plusFill} />}>
+            <Button variant="contained" onClick={handleClickCreateBrand} startIcon={<Icon icon={plusFill} />}>
               Crear marca
             </Button>
           }
@@ -229,7 +240,7 @@ export default function BrandList() {
               ) : (
                 <List sx={{ width: '100%', bgcolor: 'background.paper' }} component="nav">
                   {brands.map((brand) => (
-                    <Fragment key={brand.id}>
+                    <Fragment key={brand.name}>
                       <ListItem
                         disablePadding
                         ref={menuRef}
@@ -297,7 +308,12 @@ export default function BrandList() {
           </Grid>
         </Grid>
       </Container>
-      <PopupCreateBrand open={openPopup} edit={editBrand} handleClose={handleClickPopup} />
+      <PopupCreateBrand
+        open={openPopup}
+        setViewBrand={setViewBrand}
+        viewBrand={viewBrand}
+        handleClose={handleClickPopup}
+      />
     </Page>
   );
 }

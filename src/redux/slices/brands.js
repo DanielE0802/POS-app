@@ -5,7 +5,9 @@ const initialState = {
   isLoading: false,
   error: false,
   brands: [],
-  openPopup: false
+  openPopup: false,
+  edit: null,
+  create: null
 };
 
 const slice = createSlice({
@@ -26,6 +28,15 @@ const slice = createSlice({
     },
     switchPopupBrands(state) {
       state.openPopup = !state.openPopup;
+    },
+    setEditBrand(state, action) {
+      console.log('action.payload', action.payload);
+      state.edit = action.payload;
+      state.create = null;
+    },
+    setCreateBrand(state, action) {
+      state.create = action.payload;
+      state.edit = null;
     }
   }
 });
@@ -36,7 +47,7 @@ export default slice.reducer;
 
 // Actions
 
-export const { switchPopupBrands } = slice.actions;
+export const { switchPopupBrands, setEditBrand, setCreateBrand } = slice.actions;
 
 // ----------------------------------------------------------------------
 

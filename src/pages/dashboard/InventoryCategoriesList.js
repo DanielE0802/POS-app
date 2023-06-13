@@ -17,7 +17,9 @@ import {
   Grid,
   Skeleton,
   CardContent,
-  Divider
+  Divider,
+  ListItem,
+  IconButton
 } from '@material-ui/core';
 import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
 import { DataGrid, GridToolbar, useGridSlotComponentProps } from '@material-ui/data-grid';
@@ -224,9 +226,6 @@ export default function InvetoryCategoriesList() {
 
   const [expandedCategories, setExpandedCategories] = useState([]);
 
-  // const handleClick = () => {
-  //   setOpen(!open);
-  // };
   // states for menu options in categories
   const [viewCategory, setViewCategory] = useState(0);
   const [editCategory, setEditCategory] = useState(0);
@@ -293,17 +292,38 @@ export default function InvetoryCategoriesList() {
                 <List sx={{ width: '100%', bgcolor: 'background.paper' }} component="nav">
                   {categories.map((category) => (
                     <Fragment key={category.id}>
-                      <ListItemButton onClick={() => handleView(category.id)} ref={menuRef}>
-                        <ListItemText primary={category.name} />
-                        {category.subcategories.length > 0 ? (
-                          expandedCategories.includes(category.id) ? (
-                            <ExpandLess onClick={() => handleClick(category.id)} />
-                          ) : (
-                            <ExpandMore onClick={() => handleClick(category.id)} />
-                          )
-                        ) : null}
-                        <MenuCategories handleEdit={handleEdit} handleView={handleView} handleDelete={handleDelete} />
-                      </ListItemButton>
+                      <ListItem
+                        disablePadding
+                        secondaryAction={
+                          <>
+                            {category.subcategories.length > 0 ? (
+                              expandedCategories.includes(category.id) ? (
+                                <IconButton onClick={() => handleClick(category.id)}>
+                                  <ExpandLess />
+                                </IconButton>
+                              ) : (
+                                <IconButton onClick={() => handleClick(category.id)}>
+                                  <ExpandMore />
+                                </IconButton>
+                              )
+                            ) : null}
+                            <MenuCategories
+                              handleEdit={handleEdit}
+                              handleView={handleView}
+                              handleDelete={handleDelete}
+                            />
+                          </>
+                        }
+                      >
+                        <ListItemButton
+                          sx={{ padding: 1.5, paddingLeft: 2 }}
+                          onClick={() => handleView(category.id)}
+                          ref={menuRef}
+                        >
+                          <ListItemText primary={category.name} />
+                        </ListItemButton>
+                      </ListItem>
+
                       {category.subcategories.length > 0 && (
                         <Collapse
                           key={`collapse-${category.id}`}

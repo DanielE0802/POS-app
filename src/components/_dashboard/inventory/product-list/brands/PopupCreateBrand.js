@@ -8,7 +8,7 @@ import {
   Stack,
   TextField
 } from '@material-ui/core';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Slide } from '@mui/material';
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
@@ -17,13 +17,14 @@ import * as Yup from 'yup';
 import { useSnackbar } from 'notistack5';
 import { LoadingButton } from '@material-ui/lab';
 import RequestService from '../../../../../api/services/service';
-import { getBrands } from '../../../../../redux/slices/brands';
+import { getBrands, setEditBrand } from '../../../../../redux/slices/brands';
 
 const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
-function PopupCreateBrand({ open, handleClose, edit }) {
+function PopupCreateBrand({ open, handleClose, viewBrand, setViewBrand }) {
   const { enqueueSnackbar } = useSnackbar();
   const dispatch = useDispatch();
+  const { edit, create } = useSelector((state) => state.brands);
 
   // create category schema
   const createCategorySchema = Yup.object().shape({
@@ -39,6 +40,10 @@ function PopupCreateBrand({ open, handleClose, edit }) {
       try {
         if (edit) {
           await RequestService.editBrand({ id: edit.id, databody: { name: values.name } });
+          dispatch(setEditBrand(null));
+          if (edit.id === viewBrand.id) {
+            setViewBrand({ ...viewBrand, name: values.name });
+          }
         } else {
           await RequestService.createBrand({ name: values.name });
         }
@@ -57,12 +62,14 @@ function PopupCreateBrand({ open, handleClose, edit }) {
       }
     }
   });
-  const { errors, touched, handleSubmit, isSubmitting, getFieldProps, setFieldValue } = formik;
+  const { errors, touched, handleSubmit, isSubmitting, getFieldProps, setFieldValue, resetForm } = formik;
   useEffect(() => {
     if (edit) {
       setFieldValue('name', edit.name);
+    } else if (create) {
+      resetForm();
     }
-  }, [edit, setFieldValue]);
+  }, [edit, setFieldValue, create, resetForm]);
 
   return (
     <Dialog fullWidth maxWidth="sm" open={open} onClose={handleClose} TransitionComponent={Transition}>
@@ -99,9 +106,10 @@ function PopupCreateBrand({ open, handleClose, edit }) {
 }
 
 PopupCreateBrand.propTypes = {
-  open: PropTypes.func,
+  open: PropTypes.bool,
   handleClose: PropTypes.func,
-  edit: PropTypes.object
+  viewBrand: PropTypes.any,
+  setViewBrand: PropTypes.func
 };
 
 export default PopupCreateBrand;
