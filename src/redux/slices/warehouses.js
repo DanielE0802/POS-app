@@ -45,3 +45,13 @@ export default slice.reducer;
 // Actions
 
 export const { switchPopupWarehouses } = slice.actions;
+
+export const getWarehouses = (r) => async (dispatch) => {
+  try {
+    dispatch(slice.actions.startLoading());
+    const response = await RequestService.getPDV({ r });
+    dispatch(slice.actions.getWarehouses(response.data));
+  } catch (error) {
+    dispatch(slice.actions.hasError(error));
+  }
+};

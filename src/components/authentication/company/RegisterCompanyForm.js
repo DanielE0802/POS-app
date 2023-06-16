@@ -1,0 +1,170 @@
+import * as Yup from 'yup';
+import { Form, FormikProvider, useFormik } from 'formik';
+import { useSnackbar } from 'notistack5';
+import React from 'react';
+import { Alert, IconButton, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import Button from '@mui/material/Button';
+import { LoadingButton } from '@material-ui/lab';
+import MuiPhoneNumber from 'material-ui-phone-number';
+import { Icon, InputAdornment } from '@material-ui/core';
+import Zoom from '@mui/material/Zoom';
+import { InlineIcon } from '@iconify/react';
+import useIsMountedRef from '../../../hooks/useIsMountedRef';
+import RequestService from '../../../api/services/service';
+
+export default function RegisterCompanyForm({ nextStep, activeStep, handleBack, setPrevValues, prevValues }) {
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const isMountedRef = useIsMountedRef();
+
+  const RegisterCompanySchema = Yup.object().shape({
+    name: Yup.string()
+      .min(3, 'Ingrese un nombre valido')
+      .max(50, 'Ingrese un nombre valido')
+      .required('Ingrese el nombre'),
+    address: Yup.string()
+      .min(3, 'Ingrese una dirección valida')
+      .max(50, 'Ingrese una dirección valida')
+      .required('Ingrese la dirección'),
+    nit: Yup.string()
+      .min(10, 'Ingrese un número de NIT valido')
+      .max(10, 'Ingrese un número de NIT valido')
+      .required('Ingrese un número de NIT valido'),
+    phoneNumber: Yup.string().required('Ingrese un número de teléfono valido'),
+    quantity_employees: Yup.string().required('Ingrese la cantidad de empleados'),
+    economic_activity: Yup.string().required('Ingrese la actividad económica'),
+    website: Yup.string().url('Ingrese una URL valida')
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      name: prevValues?.name || '',
+      address: prevValues?.address || '',
+      nit: prevValues?.nit || '',
+      phoneNumber: prevValues?.phoneNumber || '',
+      website: prevValues?.website || '',
+      quantity_employees: prevValues?.quantity_employees || '',
+      economic_activity: prevValues?.economic_activity || '',
+      email: 'prueba@gmail.com',
+      source: 'web'
+    },
+    validationSchema: RegisterCompanySchema,
+    onSubmit: async (values, { setErrors, setSubmitting, setValues }) => {
+      try {
+        const response = await RequestService.createCompany({ databody: values });
+        enqueueSnackbar('Registro de la empresa completado', {
+          variant: 'success'
+        });
+        nextStep();
+        setPrevValues(values);
+        // TODO: si tengo prevValues, entonces hago un update, sino hago un create
+
+        setSubmitting(false);
+      } catch (error) {
+        console.error(error);
+        if (isMountedRef.current) {
+          setErrors({ afterSubmit: error.message });
+          setSubmitting(false);
+        }
+      }
+    }
+  });
+
+  const { errors, touched, handleSubmit, getFieldProps, isSubmitting } = formik;
+
+  return (
+    <FormikProvider value={formik}>
+      <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
+        <Stack sx={{ marginTop: 1 }} spacing={3}>
+          {errors.afterSubmit && <Alert severity="error">{errors.afterSubmit}</Alert>}
+          <Typography variant="subtitle1" textAlign="center" sx={{ mb: 3 }}>
+            Ingresa la información de la empresa
+          </Typography>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Nombre de la empresa"
+              {...getFieldProps('name')}
+              error={Boolean(touched.name && errors.name)}
+              helperText={touched.name && errors.name}
+            />
+            <TextField
+              fullWidth
+              label="Dirección de la empresa"
+              {...getFieldProps('address')}
+              error={Boolean(touched.address && errors.address)}
+              helperText={touched.address && errors.address}
+            />
+          </Stack>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="NIT"
+              {...getFieldProps('nit')}
+              error={Boolean(touched.nit && errors.nit)}
+              helperText={touched.nit && errors.nit}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Tooltip title="Número de Identificación Tributaria" TransitionComponent={Zoom} arrow>
+                      <IconButton>
+                        <InlineIcon icon="material-symbols:help-outline" width={30} height={30} />
+                      </IconButton>
+                    </Tooltip>
+                  </InputAdornment>
+                )
+              }}
+            />
+            <MuiPhoneNumber
+              fullWidth
+              variant="outlined"
+              onChange={(value) => {
+                formik.setFieldValue('phoneNumber', value);
+              }}
+              name="phoneNumber"
+              defaultCountry="co"
+              label="Número de teléfono"
+              regions={['south-america']}
+              error={Boolean(touched.phoneNumber && errors.phoneNumber)}
+              helperText={touched.phoneNumber && errors.phoneNumber}
+            />
+          </Stack>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Sitio web"
+              {...getFieldProps('website')}
+              error={Boolean(touched.website && errors.website)}
+              helperText={touched.website && errors.website}
+            />
+          </Stack>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Cantidad de empleados"
+              {...getFieldProps('quantity_employees')}
+              error={Boolean(touched.quantity_employees && errors.quantity_employees)}
+              helperText={touched.quantity_employees && errors.quantity_employees}
+            />
+            <TextField
+              fullWidth
+              label="Actividad económica"
+              {...getFieldProps('economic_activity')}
+              error={Boolean(touched.economic_activity && errors.economic_activity)}
+              helperText={touched.economic_activity && errors.economic_activity}
+            />
+          </Stack>
+        </Stack>
+        <LoadingButton
+          sx={{ marginTop: 8 }}
+          fullWidth
+          size="large"
+          type="submit"
+          variant="contained"
+          loading={isSubmitting}
+        >
+          Siguiente paso
+        </LoadingButton>
+      </Form>
+    </FormikProvider>
+  );
+}

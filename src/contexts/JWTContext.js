@@ -10,6 +10,7 @@ import RequestService from '../api/services/service';
 
 const initialState = {
   isAuthenticated: false,
+  isFirstLogin: false,
   isInitialized: false,
   user: null
 };
@@ -30,6 +31,7 @@ const handlers = {
     return {
       ...state,
       isAuthenticated: true,
+      isFirstLogin: true,
       user
     };
   },
@@ -56,7 +58,9 @@ const AuthContext = createContext({
   method: 'jwt',
   login: () => Promise.resolve,
   logout: () => Promise.resolve(),
-  register: () => Promise.resolve()
+  register: () => Promise.resolve(),
+  resetPassword: () => Promise.resolve(),
+  updateProfile: () => Promise.resolve()
 });
 
 AuthProvider.propTypes = {
@@ -72,7 +76,7 @@ function AuthProvider({ children }) {
         const accessToken = window.localStorage.getItem('accessToken');
         console.log(`access token${accessToken}`);
 
-        if (accessToken && isValidToken(accessToken)) {
+        if (accessToken) {
           setSession(accessToken);
 
           const token = jwt.decode(accessToken);
@@ -90,10 +94,12 @@ function AuthProvider({ children }) {
             type: 'INITIALIZE',
             payload: {
               isAuthenticated: true,
+              isFirstLogin: true,
               user
             }
           });
         } else {
+          console.log('no hay token');
           dispatch({
             type: 'INITIALIZE',
             payload: {
@@ -172,7 +178,13 @@ function AuthProvider({ children }) {
 
   const resetPassword = () => {};
 
-  const updateProfile = () => {};
+  const updateProfile = async (id, databody) => {
+    console.log('update profile');
+    console.log(id);
+    console.log(databody);
+    const response = await RequestService.updateUser({ id, databody });
+    console.log(response);
+  };
 
   return (
     <AuthContext.Provider

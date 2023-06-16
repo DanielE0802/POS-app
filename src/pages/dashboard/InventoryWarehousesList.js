@@ -31,7 +31,7 @@ import { ExpandLess, ExpandMore } from '@material-ui/icons';
 
 import PopupCreateWarehouse from '../../components/_dashboard/inventory/product-list/warehouses/popupCreateWarehouse';
 import MenuCategories from '../../components/_dashboard/inventory/product-list/categories/MenuCategories';
-import { switchPopupWarehouses } from '../../redux/slices/warehouses';
+import { getWarehouses, switchPopupWarehouses } from '../../redux/slices/warehouses';
 import { useDispatch, useSelector } from '../../redux/store';
 import { fCurrency } from '../../utils/formatNumber';
 import { MIconButton } from '../../components/@material-extend';
@@ -119,10 +119,14 @@ const columns = [
     hide: true
   },
   {
-    field: 'city',
+    field: 'location.name',
     headerName: 'Ciudad',
     minWidth: 140,
-    flex: 1
+    flex: 1,
+    renderCell: (params) => {
+      const locationName = params.row.location?.name || '';
+      return <span>{locationName}</span>;
+    }
   },
   {
     field: 'address',
@@ -237,11 +241,15 @@ export default function WarehousesList() {
   const { themeStretch } = useSettings();
   // const theme = useTheme();
   const dispatch = useDispatch();
-  const { openPopup } = useSelector((state) => state.warehouses);
+  const { openPopup, warehouses } = useSelector((state) => state.warehouses);
 
   useEffect(() => {
     console.log('openPopup', openPopup);
   }, [openPopup]);
+
+  useEffect(() => {
+    dispatch(getWarehouses(true));
+  }, [dispatch]);
 
   const [open, setOpen] = useState(true);
 
@@ -294,7 +302,7 @@ export default function WarehousesList() {
           checkboxSelection
           disableSelectionOnClick
           autoHeight
-          rows={warehousesOptions}
+          rows={warehouses}
           columns={columns}
           pagination
           pageSize={10}

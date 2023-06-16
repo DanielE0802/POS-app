@@ -4,7 +4,8 @@ import {
   configGetWithToken,
   configPostWithToken,
   configPatchWithToken,
-  configDeleteWithToken
+  configDeleteWithToken,
+  configPutWithToken
 } from '../configFetch';
 import apiClient from '../axios';
 
@@ -16,6 +17,8 @@ class RequestService {
   // Users
 
   fetchGetUserById = async ({ id }) => apiClient(configGet(`/user/${id}`));
+
+  updateUser = async ({ id, databody }) => apiClient(configPutWithToken(`/user/${id}`, databody));
 
   // Products
 
@@ -29,7 +32,9 @@ class RequestService {
 
   createCategory = async (databody) => apiClient(configPostWithToken('/category', databody));
 
-  // Warehouses
+  // pdv
+
+  getPDV = async ({ r }) => apiClient(configGetWithToken(`/pdv?r=${r}`));
 
   // Brands
 
@@ -40,6 +45,14 @@ class RequestService {
   editBrand = async ({ id, databody }) => apiClient(configPatchWithToken(`/brand/${id}`, databody));
 
   deleteBrand = async ({ id }) => apiClient(configDeleteWithToken(`/brand/${id}`));
+
+  // Companies
+
+  getCompanies = async () => apiClient(configGetWithToken('/company'));
+
+  updateCompany = async ({ databody }) => apiClient(configPatchWithToken('/company', databody));
+
+  createCompany = async ({ databody }) => apiClient(configPostWithToken('/company', databody));
 
   // External API (deparments and cities)
 

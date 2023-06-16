@@ -49,6 +49,8 @@ import { Icon } from '@iconify/react';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import searchFill from '@iconify/icons-eva/search-fill';
+import PopupCreateBrand from './product-list/brands/PopupCreateBrand';
+import { getBrands } from '../../../redux/slices/brands';
 import { ButtonAutocomplete } from './common/ButtonAutocomplete';
 import MenuCategories from './product-list/categories/MenuCategories';
 import PopupAssingInventory from './PopupAssignInventory';
@@ -347,6 +349,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
   // control category
   const dispatch = useDispatch();
   const { categories } = useSelector((state) => state.categories);
+  const { brands } = useSelector((state) => state.brands);
 
   // Get categories and get products in category from API
   useEffect(() => {
@@ -355,8 +358,12 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
   }, [dispatch]);
 
   useEffect(() => {
-    console.log(categories);
-  }, [categories]);
+    dispatch(getBrands());
+  }, [dispatch]);
+
+  useEffect(() => {
+    console.log(brands);
+  }, [brands]);
 
   const [searchQueryCategory, setSearchQueryCategory] = React.useState('');
   const [searchResultsCategory, setSearchResults] = React.useState(categories);
@@ -387,6 +394,32 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
 
   const handleClickOpenPopupCategory = () => {
     setOpenPopupCategory(true);
+  };
+
+  // Brands
+
+  const [searchQueryBrand, setSearchQueryBrand] = React.useState('');
+  const [searchResultsBrand, setSearchResultsBrand] = React.useState(brands);
+
+  const [selectedOptionBrand, setSelectedOptionBrand] = React.useState(''); // Nuevo estado para almacenar la opción seleccionada
+
+  const handleBrandSelect = (event, option) => {
+    setSelectedOptionBrand(option); // Actualizar el estado con la opción seleccionada
+    setFieldValue('brand', option?.id); // Actualizar el valor del campo category en Formik
+  };
+
+  const handleInputBrandChange = (event, value) => {
+    setSearchQueryBrand(value);
+  };
+
+  const [openPopupBrand, setOpenPopupBrand] = useState(false);
+
+  const handleCloseCreateBrand = () => {
+    setOpenPopupBrand(false);
+  };
+
+  const handleClickOpenPopupBrand = () => {
+    setOpenPopupBrand(true);
   };
 
   return (
@@ -534,6 +567,82 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                       ButtonAutocomplete({
                         title: 'Crear categoria',
                         handleOnClick: handleClickOpenPopupCategory,
+                        children
+                      })
+                    }
+                  />
+                  {/* Brands */}
+                  <Autocomplete
+                    fullWidth
+                    value={selectedOptionBrand}
+                    getOptionLabel={(option) => (option.name ? option.name : '')}
+                    options={brands}
+                    inputValue={searchQueryBrand}
+                    onInputChange={handleInputBrandChange}
+                    onChange={handleBrandSelect}
+                    isOptionEqualToValue={isOptionEqualToValue}
+                    loading={brands.length === 0}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        placeholder="Marca"
+                        InputProps={{
+                          ...params.InputProps,
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Box
+                                component={Icon}
+                                icon={searchFill}
+                                sx={{
+                                  ml: 1,
+                                  width: 20,
+                                  height: 20,
+                                  color: 'text.disabled'
+                                }}
+                              />
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    )}
+                    renderOption={(props, option) => {
+                      const matches = match(option.name, searchQueryBrand);
+                      const parts = parse(option.name, matches);
+
+                      return (
+                        <>
+                          <li {...props}>
+                            <Link onClick={() => handleBrandSelect(option)} to="#" underline="none">
+                              <Box sx={{ typography: 'body2', display: 'flex', alignItems: 'center' }}>
+                                <Typography variant="body2" color="text.primary">
+                                  {parts.map((part, index) => (
+                                    <span
+                                      key={index}
+                                      style={{
+                                        fontWeight: part.highlight ? 700 : 400
+                                      }}
+                                    >
+                                      {part.text}
+                                    </span>
+                                  ))}
+                                </Typography>
+                              </Box>
+                            </Link>
+                          </li>
+                        </>
+                      );
+                    }}
+                    noOptionsText={
+                      <>
+                        <Typography variant="body2" color="text.secondary" sx={{ py: 2, px: 1 }}>
+                          No se encontraron resultados a la búsqueda "{searchQueryBrand}"
+                        </Typography>
+                      </>
+                    }
+                    PaperComponent={({ children }) =>
+                      ButtonAutocomplete({
+                        title: 'Crear marca',
+                        handleOnClick: handleClickOpenPopupBrand,
                         children
                       })
                     }
@@ -731,6 +840,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
           </Grid>
         </Grid>
       </Form>
+      <PopupCreateBrand open={openPopupBrand} handleClose={handleCloseCreateBrand} />
       <PopupCreateCategory open={openPopupCategory} handleClose={handleCloseCreateCategory} />
       {/* <Webcam ref={webcamRef} /> */}
     </FormikProvider>

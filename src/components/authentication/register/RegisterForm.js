@@ -7,10 +7,15 @@ import eyeFill from '@iconify/icons-eva/eye-fill';
 import closeFill from '@iconify/icons-eva/close-fill';
 import eyeOffFill from '@iconify/icons-eva/eye-off-fill';
 import MuiPhoneNumber from 'material-ui-phone-number';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import { capitalCase } from 'change-case';
+
 // material
 import { Stack, TextField, IconButton, InputAdornment, Alert } from '@material-ui/core';
 import { LoadingButton } from '@material-ui/lab';
 // hooks
+import { Link, Tooltip } from '@mui/material';
 import useAuth from '../../../hooks/useAuth';
 import useIsMountedRef from '../../../hooks/useIsMountedRef';
 //
@@ -22,6 +27,7 @@ export default function RegisterForm() {
   const isMountedRef = useIsMountedRef();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
+  const { method } = useAuth();
 
   const RegisterSchema = Yup.object().shape({
     firstName: Yup.string()
@@ -54,7 +60,7 @@ export default function RegisterForm() {
     onSubmit: async (values, { setErrors, setSubmitting }) => {
       try {
         await register(values.email, values.password, values.firstName, values.lastName, values.dni, values.tel);
-        enqueueSnackbar('Registro completado', {
+        enqueueSnackbar('Registro del usuario completado', {
           variant: 'success',
           action: (key) => (
             <MIconButton size="small" onClick={() => closeSnackbar(key)}>
@@ -79,6 +85,17 @@ export default function RegisterForm() {
 
   return (
     <FormikProvider value={formik}>
+      <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ flexGrow: 1 }}>
+          <Typography variant="h4" gutterBottom>
+            Comience completamente gratis
+          </Typography>
+          <Typography sx={{ color: 'text.secondary' }}>No necesita tarjeta de credito</Typography>
+        </Box>
+        <Tooltip title={capitalCase(method)}>
+          <Box component="img" src={`/static/auth/ic_${method}.png`} sx={{ width: 32, height: 32 }} />
+        </Tooltip>
+      </Box>
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
         <Stack spacing={3}>
           {errors.afterSubmit && <Alert severity="error">{errors.afterSubmit}</Alert>}
@@ -159,6 +176,17 @@ export default function RegisterForm() {
           </LoadingButton>
         </Stack>
       </Form>
+      <Typography variant="body2" align="center" sx={{ color: 'text.secondary', mt: 3 }}>
+        Al registrarse aceptas terminos y condiciones. Por favor lea nuestros&nbsp;
+        <Link underline="always" color="text.primary" href="#">
+          Terminos y condiciones
+        </Link>
+        &nbsp;y&nbsp;
+        <Link underline="always" color="text.primary" href="#">
+          Politica de privacidad
+        </Link>
+        .
+      </Typography>
     </FormikProvider>
   );
 }

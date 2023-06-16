@@ -6,7 +6,6 @@ import axios from '../api/axios';
 // ----------------------------------------------------------------------
 
 const isValidToken = (accessToken) => {
-  console.log(`is valid token${accessToken}`);
   if (!accessToken) {
     return false;
   }

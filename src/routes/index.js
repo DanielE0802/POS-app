@@ -6,6 +6,7 @@ import LogoOnlyLayout from '../layouts/LogoOnlyLayout';
 // guards
 import GuestGuard from '../guards/GuestGuard';
 import AuthGuard from '../guards/AuthGuard';
+import GuestGuardStep from '../guards/GuestGuardStep';
 // import RoleBasedGuard from '../guards/RoleBasedGuard';
 // components
 import LoadingScreen from '../components/LoadingScreen';
@@ -49,6 +50,14 @@ export default function Router() {
             <GuestGuard>
               <Login />
             </GuestGuard>
+          )
+        },
+        {
+          path: 'StepByStep',
+          element: (
+            <GuestGuardStep>
+              <SetpBySetp />
+            </GuestGuardStep>
           )
         },
         {
@@ -176,6 +185,7 @@ const Login = Loadable(lazy(() => import('../pages/authentication/Login')));
 const Register = Loadable(lazy(() => import('../pages/authentication/Register')));
 const ResetPassword = Loadable(lazy(() => import('../pages/authentication/ResetPassword')));
 const VerifyCode = Loadable(lazy(() => import('../pages/authentication/VerifyCode')));
+const SetpBySetp = Loadable(lazy(() => import('../pages/authentication/SetpBySetp')));
 // Dashboard
 const GeneralApp = Loadable(lazy(() => import('../pages/dashboard/GeneralApp')));
 const GeneralEcommerce = Loadable(lazy(() => import('../pages/dashboard/GeneralEcommerce')));
