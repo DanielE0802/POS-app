@@ -36,7 +36,8 @@ import {
   ListItemText,
   Button,
   Link,
-  Box
+  Box,
+  Paper
 } from '@material-ui/core';
 import Zoom from '@mui/material/Zoom';
 
@@ -48,6 +49,7 @@ import { Icon } from '@iconify/react';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import searchFill from '@iconify/icons-eva/search-fill';
+import { ButtonAutocomplete } from './common/ButtonAutocomplete';
 import MenuCategories from './product-list/categories/MenuCategories';
 import PopupAssingInventory from './PopupAssignInventory';
 import CustomTooltip from './common/CustomTooltip';
@@ -262,16 +264,18 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
   }, [values.taxesOption, setFieldValue, setFieldTouched, values.priceBase]);
 
   // Popup to assign inventory
-  const handleAssignInventory = (wareHouse, quantity, minQuantity) => {
-    if (warehouseEdit) {
+  const handleAssignInventory = (wareHouse, quantity, minQuantity, edit) => {
+    if (edit) {
       handleEditInventory(wareHouse, quantity, minQuantity);
-      return;
+      handleClosePopupWarehouse();
+
+      return true;
     }
     if (values.wareHouse.some((item) => item.id === wareHouse.id)) {
-      enqueueSnackbar(`La bodega ${wareHouse.title} ya esta seleccionada, asignale una cantidad editandola.`, {
+      enqueueSnackbar(`El punto de venta ${wareHouse.title} ya esta seleccionada, asignale una cantidad editandola.`, {
         variant: 'warning'
       });
-      return;
+      return false;
     }
     setFieldValue('wareHouse', [
       ...values.wareHouse,
@@ -282,6 +286,11 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
         minQuantity
       }
     ]);
+    enqueueSnackbar(`El punto de venta ${wareHouse.title} fue asignado correctamente.`, {
+      variant: 'success'
+    });
+    handleClosePopupWarehouse();
+    return true;
   };
 
   const [warehouseEdit, setWarehouseEdit] = useState(null);
@@ -310,8 +319,8 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
   };
 
   const setEditWareHouse = (warehouse) => {
-    setWarehouseEdit(warehouse);
     handleClickOpenPopupWarehouse();
+    setWarehouseEdit(warehouse);
   };
 
   const deleteWareHouse = (warehouse) => {
@@ -320,6 +329,11 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
   };
 
   const [openPopupWarehouse, setOpenPopupWarehouse] = useState(false);
+
+  const setAssignWarehouse = () => {
+    setEditWareHouse(null);
+    handleClickOpenPopupWarehouse();
+  };
 
   const handleClickOpenPopupWarehouse = () => {
     setOpenPopupWarehouse(true);
@@ -509,44 +523,19 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                         </>
                       );
                     }}
-                    ListboxComponent={(props) => (
-                      <ul
-                        style={{
-                          maxHeight: 300, // Ajusta la altura máxima del menú desplegable según tus necesidades
-                          overflowY: 'auto', // Agrega desplazamiento vertical si el contenido excede la altura máxima
-                          paddingTop: 0, // Añade un padding superior para el botón "Agregar punto de venta"
-                          position: 'relative' // Establece la posición del contenedor ul como relativa
-                        }}
-                        {...props}
-                      >
-                        <ul
-                          style={{
-                            maxHeight: 250, // Ajusta la altura máxima del menú desplegable según tus necesidades
-                            overflowY: 'auto', // Agrega desplazamiento vertical si el contenido excede la altura máxima
-                            paddingTop: 0, // Añade un padding superior para el botón "Agregar punto de venta"
-                            position: 'relative' // Establece la posición del contenedor ul como relativa
-                          }}
-                        >
-                          {props.children}
-                        </ul>
-                        <li>
-                          <Button onClick={handleClickOpenPopupCategory} fullWidth>
-                            Crear categoria
-                            <Icon style={{ marginLeft: 10 }} icon="gala:add" width={18} height={18} />
-                          </Button>
-                        </li>
-                      </ul>
-                    )}
                     noOptionsText={
                       <>
                         <Typography variant="body2" color="text.secondary" sx={{ py: 2, px: 1 }}>
                           No se encontraron resultados a la búsqueda "{searchQueryCategory}"
                         </Typography>
-                        <Button fullWidth>
-                          Crear categoria
-                          <Icon style={{ marginLeft: 10 }} icon="gala:add" width={18} height={18} />
-                        </Button>
                       </>
+                    }
+                    PaperComponent={({ children }) =>
+                      ButtonAutocomplete({
+                        title: 'Crear categoria',
+                        handleOnClick: handleClickOpenPopupCategory,
+                        children
+                      })
                     }
                   />
                 </Stack>
@@ -675,9 +664,6 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                       secondary={`Cantidad: ${item.quantity} Cantidad minima: ${item.minQuantity}`}
                     />
                     <MenuCategories
-                      // handleEdit={setEditWareHouse}
-                      // // Al hacer click enviar el elemento actualizado con su valor
-                      // onClick={() => console.log('hola')}
                       element={item} // Agrega esta línea
                       handleDelete={deleteWareHouse}
                       edit={false}
@@ -687,6 +673,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                 ))}
               </List>
               <PopupAssingInventory
+                setAssignWarehouse={setAssignWarehouse}
                 handleAssignInventory={handleAssignInventory}
                 warehouseEdit={warehouseEdit}
                 handleClose={handleClosePopupWarehouse}

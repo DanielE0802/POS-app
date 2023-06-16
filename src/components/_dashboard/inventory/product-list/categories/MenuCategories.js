@@ -82,8 +82,7 @@ export default function MenuCategories({ handleEdit, handleDelete, handleView, v
             </Typography>
           </MenuItem>
         )}
-
-        <Divider />
+        {view || edit ? <Divider /> : null}
         <MenuItem onClick={() => handleDelete(element)} sx={{ color: 'error.main' }}>
           <Delete width={20} height={20} />
           <Typography variant="body2" sx={{ ml: 2 }}>
