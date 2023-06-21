@@ -14,13 +14,16 @@ GuestGuardStep.propTypes = {
 
 export default function GuestGuardStep({ children }) {
   const { isAuthenticated, isFirstLogin } = useAuth();
-  console.log(isFirstLogin);
 
   if (isAuthenticated && isFirstLogin) {
     return <SetpBySetp />;
   }
   if (isAuthenticated && !isFirstLogin) {
     return <Navigate to={PATH_DASHBOARD.root} />;
+  }
+  if (!isAuthenticated) {
+    console.log('no esta autenticado');
+    return <Navigate to="/" />;
   }
 
   return <>{children}</>;

@@ -1,16 +1,22 @@
 import * as Yup from 'yup';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { useSnackbar } from 'notistack5';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Autocomplete, Stack, TextField, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import { LoadingButton } from '@material-ui/lab';
 import MuiPhoneNumber from 'material-ui-phone-number';
-import useIsMountedRef from '../../../hooks/useIsMountedRef';
+import closeFill from '@iconify/icons-eva/close-fill';
+import { Icon } from '@iconify/react';
+import PropTypes from 'prop-types';
 import RequestService from '../../../api/services/service';
+import useAuth from '../../../hooks/useAuth';
+import { MIconButton } from '../../@material-extend';
+import useIsMountedRef from '../../../hooks/useIsMountedRef';
 
-export default function RegisterPDVForm({ nextStep, activeStep, handleBack, setPrevValues, prevValues }) {
+export default function RegisterPDVForm({ setActiveStep, activeStep, handleBack, setPrevValues, prevValues }) {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { company, pdvCompany, updatePDV, createPDV } = useAuth();
   const isMountedRef = useIsMountedRef();
 
   const RegisterPDVSchema = Yup.object().shape({
@@ -27,62 +33,78 @@ export default function RegisterPDVForm({ nextStep, activeStep, handleBack, setP
       name: prevValues?.name || '',
       description: prevValues?.description || '',
       departament: prevValues?.departament || '',
-      city: prevValues?.city || '',
+      city: prevValues?.location?.id || '',
       address: prevValues?.address || '',
-      phone: prevValues?.phone || ''
+      main: true,
+      phone: prevValues?.phone || '',
+      company: ''
     },
     validationSchema: RegisterPDVSchema,
-    onSubmit: async (values, { setErrors, setSubmitting, setValues }) => {
+    onSubmit: async (values, { setErrors, setSubmitting, setValues, setFieldValue }) => {
       try {
-        // await register(values.email, values.password, values.name, values.lastName, values.dni, values.tel);
-        nextStep();
+        const databody = {
+          name: values.name,
+          description: values.description,
+          address: values.address,
+          phone: values.phone,
+          main: values.main,
+          company: { id: values.company.id },
+          location: {
+            id: values.city.id
+          }
+        };
+        const response = await createPDV(databody);
+        // TODO: faltan municipios en el endpoint (cali por ejemplo)
+
         enqueueSnackbar('Registro del punto de venta completado', {
-          variant: 'success'
+          variant: 'success',
+          action: (key) => (
+            <MIconButton size="small" onClick={() => closeSnackbar(key)}>
+              <Icon icon={closeFill} />
+            </MIconButton>
+          )
         });
         setPrevValues(values);
         // TODO: si tengo prevValues, entonces hago un update, sino hago un create
 
         setSubmitting(false);
+        setActiveStep(2);
       } catch (error) {
         console.error(error);
-        if (isMountedRef.current) {
-          setErrors({ afterSubmit: error.message });
-          setSubmitting(false);
-        }
+        setErrors({ afterSubmit: error.message });
+        setSubmitting(false);
       }
     }
   });
 
   const [deparments, setDepartments] = React.useState([]);
-  const [department, setDepartment] = React.useState('');
-  const [cities, setCities] = React.useState([]);
-
-  const fetchDepartments = async () => {
-    const response = await RequestService.getDepartments();
-    // change departamentos to label in the array
-    const departamentos = response.data.map((departamento) => ({ label: departamento.departamento }));
-    setDepartments(departamentos);
-  };
+  const [department, setDepartment] = React.useState([]);
+  const [municipios, setMunicipios] = useState([]);
 
   useEffect(() => {
-    console.log(department);
-    if (department) {
-      const fetchCities = async () => {
-        const response = await RequestService.getCities({ department: department.label });
-        // change departamentos to label in the array
-        const cities = response.data.map((city) => ({ label: city.municipio }));
-        setCities(cities);
-      };
-      fetchCities();
-    }
-  }, [department]);
-
-  useEffect(() => {
-    fetchDepartments();
+    console.log('este es el register pdv form');
+    locations();
   }, []);
 
-  const { errors, touched, handleSubmit, getFieldProps, values, isSubmitting } = formik;
+  const locations = async () => {
+    const resp = (await RequestService.getLocations(true)).data;
+    setDepartments(resp);
+  };
 
+  const { errors, touched, handleSubmit, getFieldProps, values, isSubmitting, setFieldValue } = formik;
+
+  useEffect(() => {
+    if (company !== undefined && company !== null) {
+      setFieldValue('company', { id: company[0] ? company[0].id : company.id });
+      console.log(company);
+    }
+  }, [company, setFieldValue]);
+  useEffect(() => {
+    // setMunicipios(department?.towns);
+    const towns = department?.towns ? department.towns : [];
+    setMunicipios(towns);
+    // setMunicipios(municipiosOfDepartment);
+  }, [values.departament, department]);
   return (
     <FormikProvider value={formik}>
       <Form noValidate autoComplete="off" onSubmit={handleSubmit}>
@@ -111,11 +133,11 @@ export default function RegisterPDVForm({ nextStep, activeStep, handleBack, setP
           <Autocomplete
             sx={{ mb: 2 }}
             fullWidth
+            getOptionLabel={(option) => option.name || ''}
             autoComplete="departament"
             options={deparments}
             {...getFieldProps('departament')}
             onChange={(event, value) => {
-              console.log(value);
               setDepartment(value);
               values.departament = value;
               values.city = '';
@@ -128,7 +150,8 @@ export default function RegisterPDVForm({ nextStep, activeStep, handleBack, setP
             sx={{ mb: 2 }}
             fullWidth
             autoComplete="city"
-            options={cities}
+            options={municipios}
+            getOptionLabel={(option) => option.name || ''}
             {...getFieldProps('city')}
             onChange={(event, value) => {
               console.log(value);
@@ -169,3 +192,11 @@ export default function RegisterPDVForm({ nextStep, activeStep, handleBack, setP
     </FormikProvider>
   );
 }
+
+// RegisterPDVForm.propTypes = {
+//   nextStep: PropTypes.func,
+//   activeStep: PropTypes.number,
+//   handleBack: PropTypes.func,
+//   setPrevValues: PropTypes.func,
+//   prevValues: PropTypes.object
+// };

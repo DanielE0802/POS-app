@@ -16,6 +16,7 @@ import { Stack, TextField, IconButton, InputAdornment, Alert } from '@material-u
 import { LoadingButton } from '@material-ui/lab';
 // hooks
 import { Link, Tooltip } from '@mui/material';
+import { useNavigate } from 'react-router';
 import useAuth from '../../../hooks/useAuth';
 import useIsMountedRef from '../../../hooks/useIsMountedRef';
 //
@@ -28,6 +29,7 @@ export default function RegisterForm() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
   const { method } = useAuth();
+  const navigate = useNavigate();
 
   const RegisterSchema = Yup.object().shape({
     firstName: Yup.string()
@@ -59,7 +61,14 @@ export default function RegisterForm() {
     validationSchema: RegisterSchema,
     onSubmit: async (values, { setErrors, setSubmitting }) => {
       try {
-        await register(values.email, values.password, values.firstName, values.lastName, values.dni, values.tel);
+        const response = await register(
+          values.email,
+          values.password,
+          values.firstName,
+          values.lastName,
+          values.dni,
+          values.tel
+        );
         enqueueSnackbar('Registro del usuario completado', {
           variant: 'success',
           action: (key) => (
@@ -70,6 +79,10 @@ export default function RegisterForm() {
         });
         if (isMountedRef.current) {
           setSubmitting(false);
+        }
+        if (response.status === 201) {
+          // Navigate to login
+          navigate('/', { replace: true });
         }
       } catch (error) {
         console.error(error);

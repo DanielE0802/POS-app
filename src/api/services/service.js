@@ -18,7 +18,9 @@ class RequestService {
 
   fetchGetUserById = async ({ id }) => apiClient(configGet(`/user/${id}`));
 
-  updateUser = async ({ id, databody }) => apiClient(configPutWithToken(`/user/${id}`, databody));
+  updateUser = async ({ id, databody }) => apiClient(configPatchWithToken(`/user/${id}`, databody));
+
+  updateProfile = async ({ id, databody }) => apiClient(configPatchWithToken(`/profile/${id}`, databody));
 
   // Products
 
@@ -36,6 +38,8 @@ class RequestService {
 
   getPDV = async ({ r }) => apiClient(configGetWithToken(`/pdv?r=${r}`));
 
+  createPDV = async ({ databody }) => apiClient(configPostWithToken(`/pdv?`, databody));
+
   // Brands
 
   getBrands = async ({ r }) => apiClient(configGetWithToken(`/brand?r=${r}`));
@@ -48,11 +52,20 @@ class RequestService {
 
   // Companies
 
-  getCompanies = async () => apiClient(configGetWithToken('/company'));
+  getCompanies = async ({ r }) => apiClient(configGetWithToken('/company'));
 
-  updateCompany = async ({ databody }) => apiClient(configPatchWithToken('/company', databody));
+  updateCompany = async ({ id, databody }) => apiClient(configPatchWithToken(`/company/${id}`, databody));
 
   createCompany = async ({ databody }) => apiClient(configPostWithToken('/company', databody));
+
+  getCompanyById = async (id, r) => apiClient(configGetWithToken(`/company/${id}?r=true`));
+
+  // TODO: retornar los pdvs de la compañia al filtrar por id
+  // TODO: retornar la compañia al consultar el usuario
+
+  // Location
+
+  getLocations = async (r) => apiClient(configGetWithToken(`/location?r=${r}`));
 
   // External API (deparments and cities)
 

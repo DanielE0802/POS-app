@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // material
 import Box from '@mui/material/Box';
@@ -42,6 +42,7 @@ export default function SetpBySetp() {
   // Setp by step
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
+  const { company, pdvCompany } = useAuth();
 
   const isStepOptional = (step) => step === 3;
 
@@ -59,6 +60,8 @@ export default function SetpBySetp() {
   };
 
   const handleBack = () => {
+    console.log('handleBack');
+    console.log(activeStep);
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
@@ -83,6 +86,23 @@ export default function SetpBySetp() {
 
   const [prevValues, setPrevValues] = useState({});
   const [preValuesPDV, setPreValuesPDV] = useState({});
+
+  useEffect(() => {
+    console.log('Esta es la empresa en el setp by setp');
+    console.log(company);
+    if (company && company.id) {
+      setActiveStep(1);
+      setPrevValues(company);
+    }
+  }, [company]);
+
+  useEffect(() => {
+    console.log('Este es el pdv en el step by step');
+    if (pdvCompany) {
+      setActiveStep(2);
+      setPreValuesPDV(pdvCompany);
+    }
+  }, [pdvCompany]);
 
   // Logout
   const { logout } = useAuth();
@@ -147,6 +167,7 @@ export default function SetpBySetp() {
           )}
           {activeStep === 1 && (
             <RegisterPDVForm
+              setActiveStep={setActiveStep}
               prevValues={preValuesPDV}
               setPrevValues={setPreValuesPDV}
               nextStep={handleNext}
@@ -154,7 +175,9 @@ export default function SetpBySetp() {
               handleBack={handleBack}
             />
           )}
-          {activeStep === 2 && <RegisterSummary />}
+          {activeStep === 2 && (
+            <RegisterSummary nextStep={handleNext} activeStep={activeStep} handleBack={handleBack} />
+          )}
         </ContentStyle>
       </Container>
     </RootStyle>

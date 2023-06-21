@@ -1,11 +1,11 @@
 export const configGetWithToken = (url) => {
-  const localUser = JSON.parse(localStorage.getItem('user'));
+  const localUser = localStorage.getItem('accessToken');
   return {
     method: 'get',
     url,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localUser?.token}`
+      Authorization: `Bearer ${localUser}`
     }
   };
 };
@@ -28,47 +28,48 @@ export const configGet = (url) => ({
 });
 
 export const configPatchWithToken = (url, databody) => {
-  const localUser = JSON.parse(localStorage.getItem('user'));
+  const localUser = localStorage.getItem('accessToken');
+  console.log(localUser);
   return {
     method: 'patch',
     url,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localUser?.token}`
+      Authorization: `Bearer ${localUser}`
     },
     data: databody
   };
 };
 
 export const configPostWithToken = (url, databody) => {
-  const localUser = JSON.parse(localStorage.getItem('user'));
+  const localUser = localStorage.getItem('accessToken');
   return {
     method: 'post',
     url,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localUser?.token}`
+      Authorization: `Bearer ${localUser}`
     },
     data: databody
   };
 };
 
 export const configPostFileXlsx = (url, databody) => {
-  const localUser = JSON.parse(localStorage.getItem('user'));
+  const localUser = localStorage.getItem('accessToken');
   return {
     method: 'post',
     url,
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': 'attachment; filename="Response.xlsx"',
-      Authorization: `Bearer ${localUser.token}`
+      Authorization: `Bearer ${localUser}`
     },
     data: databody
   };
 };
 
 export const configPostFileDocx = (url, databody) => {
-  const localUser = JSON.parse(localStorage.getItem('user'));
+  const localUser = localStorage.getItem('accessToken');
   return {
     method: 'post',
     url,
@@ -76,13 +77,13 @@ export const configPostFileDocx = (url, databody) => {
     headers: {
       'Content-Type': 'application/json',
       'Content-Disposition': 'attachment; filename="Response.docx"',
-      Authorization: `Bearer ${localUser.token}`
+      Authorization: `Bearer ${localUser}`
     },
     data: databody
   };
 };
 export const configPostFilePdf = (url, databody) => {
-  const localUser = JSON.parse(localStorage.getItem('user'));
+  const localUser = localStorage.getItem('accessToken');
   return {
     method: 'post',
     url,
@@ -90,33 +91,33 @@ export const configPostFilePdf = (url, databody) => {
     headers: {
       'Content-Type': 'application/json',
       'Content-Disposition': 'attachment; filename="Response.pdf"',
-      Authorization: `Bearer ${localUser.token}`
+      Authorization: `Bearer ${localUser}`
     },
     data: databody
   };
 };
 
 export const configPutWithToken = (url, databody) => {
-  const localUser = JSON.parse(localStorage.getItem('user'));
+  const localUser = localStorage.getItem('accessToken');
   return {
     method: 'put',
     url,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localUser?.token}`
+      Authorization: `Bearer ${localUser}`
     },
     data: databody
   };
 };
 
 export const configDeleteWithToken = (url) => {
-  const localUser = JSON.parse(localStorage.getItem('user'));
+  const localUser = localStorage.getItem('accessToken');
   return {
     method: 'delete',
     url,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localUser?.token}`
+      Authorization: `Bearer ${localUser}`
     }
   };
 };

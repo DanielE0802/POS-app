@@ -25,7 +25,7 @@ export default function AuthGuard({ children }) {
     return <Login />;
   }
 
-  if (isFirstLogin) {
+  if (isFirstLogin && isAuthenticated) {
     return <Navigate to="/StepByStep" />;
   }
 

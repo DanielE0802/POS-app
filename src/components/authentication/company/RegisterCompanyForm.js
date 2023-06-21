@@ -9,12 +9,17 @@ import MuiPhoneNumber from 'material-ui-phone-number';
 import { Icon, InputAdornment } from '@material-ui/core';
 import Zoom from '@mui/material/Zoom';
 import { InlineIcon } from '@iconify/react';
-import useIsMountedRef from '../../../hooks/useIsMountedRef';
+import PropTypes from 'prop-types';
 import RequestService from '../../../api/services/service';
+import useAuth from '../../../hooks/useAuth';
+import useIsMountedRef from '../../../hooks/useIsMountedRef';
 
 export default function RegisterCompanyForm({ nextStep, activeStep, handleBack, setPrevValues, prevValues }) {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { user, company, updateCompany, createCompany } = useAuth();
   const isMountedRef = useIsMountedRef();
+
+  console.log(activeStep);
 
   const RegisterCompanySchema = Yup.object().shape({
     name: Yup.string()
@@ -25,14 +30,11 @@ export default function RegisterCompanyForm({ nextStep, activeStep, handleBack, 
       .min(3, 'Ingrese una dirección valida')
       .max(50, 'Ingrese una dirección valida')
       .required('Ingrese la dirección'),
-    nit: Yup.string()
-      .min(10, 'Ingrese un número de NIT valido')
-      .max(10, 'Ingrese un número de NIT valido')
-      .required('Ingrese un número de NIT valido'),
+    nit: Yup.string().required('Ingrese un número de NIT valido'),
     phoneNumber: Yup.string().required('Ingrese un número de teléfono valido'),
     quantity_employees: Yup.string().required('Ingrese la cantidad de empleados'),
     economic_activity: Yup.string().required('Ingrese la actividad económica'),
-    website: Yup.string().url('Ingrese una URL valida')
+    website: Yup.string().required('Ingrese una URL valida')
   });
 
   const formik = useFormik({
@@ -43,28 +45,32 @@ export default function RegisterCompanyForm({ nextStep, activeStep, handleBack, 
       phoneNumber: prevValues?.phoneNumber || '',
       website: prevValues?.website || '',
       quantity_employees: prevValues?.quantity_employees || '',
-      economic_activity: prevValues?.economic_activity || '',
-      email: 'prueba@gmail.com',
-      source: 'web'
+      economic_activity: prevValues?.economic_activity || ''
     },
     validationSchema: RegisterCompanySchema,
-    onSubmit: async (values, { setErrors, setSubmitting, setValues }) => {
+    onSubmit: async (values, { setErrors, setSubmitting }) => {
       try {
-        const response = await RequestService.createCompany({ databody: values });
-        enqueueSnackbar('Registro de la empresa completado', {
-          variant: 'success'
-        });
-        nextStep();
-        setPrevValues(values);
+        console.log(prevValues);
+        if (prevValues.id) {
+          const response = await RequestService.updateCompany({ databody: values, id: prevValues.id });
+          enqueueSnackbar('Actualización de la empresa completado', {
+            variant: 'success'
+          });
+        } else {
+          const response = await createCompany({ databody: values });
+          enqueueSnackbar('Registro de la empresa completado', {
+            variant: 'success'
+          });
+          nextStep();
+          setPrevValues(values);
+        }
         // TODO: si tengo prevValues, entonces hago un update, sino hago un create
-
+        nextStep();
         setSubmitting(false);
       } catch (error) {
         console.error(error);
-        if (isMountedRef.current) {
-          setErrors({ afterSubmit: error.message });
-          setSubmitting(false);
-        }
+        setErrors({ afterSubmit: error.message });
+        setSubmitting(false);
       }
     }
   });
@@ -120,6 +126,7 @@ export default function RegisterCompanyForm({ nextStep, activeStep, handleBack, 
               onChange={(value) => {
                 formik.setFieldValue('phoneNumber', value);
               }}
+              value={formik.values.phoneNumber}
               name="phoneNumber"
               defaultCountry="co"
               label="Número de teléfono"
@@ -168,3 +175,11 @@ export default function RegisterCompanyForm({ nextStep, activeStep, handleBack, 
     </FormikProvider>
   );
 }
+
+RegisterCompanyForm.propTypes = {
+  nextStep: PropTypes.func,
+  activeStep: PropTypes.number,
+  handleBack: PropTypes.func,
+  setPrevValues: PropTypes.func,
+  prevValues: PropTypes.object
+};

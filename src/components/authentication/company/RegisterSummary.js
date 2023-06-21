@@ -1,27 +1,44 @@
 import React from 'react';
 import { Button, Card, Divider, Grid, Typography } from '@mui/material';
+import { useSnackbar } from 'notistack5';
+import { Icon } from '@iconify/react';
+import closeFill from '@iconify/icons-eva/close-fill';
+import { useNavigate } from 'react-router-dom';
+import { MIconButton } from '../../@material-extend';
 import useAuth from '../../../hooks/useAuth';
+import { PATH_DASHBOARD } from '../../../routes/paths';
 
 export default function RegisterSummary() {
-  const { updateProfile } = useAuth();
-
-  const values = {
-    name: 'Empresa de prueba',
-    address: 'Calle 123',
-    nit: '1234567890',
-    tel: '1234567890',
-    quantity_employee: '10',
-    economic_activity: 'Comercio'
-  };
+  const { updateProfile, company, pdvCompany, user } = useAuth();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
   const handleFinish = async () => {
-    console.log('Finish');
-
-    // update profile
-    const resp = await updateProfile('ce654b52-4b6c-484c-9bb0-e8d03ff3cac3', {
-      ifFirstLogin: false
-    });
-    console.log(resp);
+    try {
+      await updateProfile(user.id, {
+        isFirstLogin: false
+      });
+      enqueueSnackbar('Registro completado', {
+        variant: 'success',
+        action: (key) => (
+          <MIconButton size="small" onClick={() => closeSnackbar(key)}>
+            <Icon icon={closeFill} />
+          </MIconButton>
+        )
+      });
+      navigate(PATH_DASHBOARD.general.app);
+      console.log('registro completado');
+    } catch (error) {
+      console.error(error);
+      enqueueSnackbar('Error al registrar', {
+        variant: 'error',
+        action: (key) => (
+          <MIconButton size="small" onClick={() => closeSnackbar(key)}>
+            <Icon icon={closeFill} />
+          </MIconButton>
+        )
+      });
+    }
   };
 
   return (
@@ -35,7 +52,7 @@ export default function RegisterSummary() {
               Nombre
             </Typography>
             <Typography variant="body2" gutterBottom>
-              {values.name}
+              {company.name}
             </Typography>
           </Grid>
           <Grid item xs={12} md={4}>
@@ -43,7 +60,7 @@ export default function RegisterSummary() {
               NIT
             </Typography>
             <Typography variant="body2" gutterBottom>
-              {values.nit}
+              {company.nit}
             </Typography>
           </Grid>
           <Grid item xs={12} md={4}>
@@ -51,7 +68,7 @@ export default function RegisterSummary() {
               Dirección
             </Typography>
             <Typography variant="body2" gutterBottom>
-              {values.address}
+              {company.address}
             </Typography>
           </Grid>
           <Grid item xs={12} md={4}>
@@ -59,7 +76,7 @@ export default function RegisterSummary() {
               Teléfono
             </Typography>
             <Typography variant="body2" gutterBottom>
-              {values.tel}
+              {company.phoneNumber}
             </Typography>
           </Grid>
           <Grid item xs={12} md={4}>
@@ -67,7 +84,7 @@ export default function RegisterSummary() {
               Cantidad de empleados
             </Typography>
             <Typography variant="body2" gutterBottom>
-              {values.quantity_employee}
+              {company.quantity_employees}
             </Typography>
           </Grid>
         </Grid>
@@ -75,26 +92,46 @@ export default function RegisterSummary() {
       <Card sx={{ p: 3, overflow: 'visible', zIndex: 99, mt: 3 }}>
         <Typography variant="h4">Información de punto de venta principal</Typography>
         <Divider sx={{ mb: 3, mt: 0.5 }} />
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
-            <Typography variant="subtitle1" gutterBottom>
-              Nombre
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-              {values.name}
-            </Typography>
+        {console.log(pdvCompany)}
+        {pdvCompany !== '' && pdvCompany !== null && pdvCompany !== null ? (
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <Typography variant="subtitle1" gutterBottom>
+                Nombre
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                {pdvCompany[0] ? pdvCompany[0].name : pdvCompany.name}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Typography variant="subtitle1" gutterBottom>
+                Descripción
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                {pdvCompany[0] ? pdvCompany[0].description : pdvCompany.description}
+                {console.log(pdvCompany)}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Typography variant="subtitle1" gutterBottom>
+                Dirección
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                {pdvCompany[0] ? pdvCompany[0].address : pdvCompany.address}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Typography variant="subtitle1" gutterBottom>
+                Teléfono
+              </Typography>
+              <Typography variant="body2" gutterBottom>
+                {pdvCompany[0] ? pdvCompany[0].phone : pdvCompany.phone}
+              </Typography>
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={4}>
-            <Typography variant="subtitle1" gutterBottom>
-              Dirección
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-              {values.address}
-            </Typography>
-          </Grid>
-        </Grid>
+        ) : null}
       </Card>
-      <Button onClick={handleFinish} sx={{ mt: 3 }} variant="contained" color="primary" fullWidth>
+      <Button onClick={() => handleFinish()} sx={{ mt: 3 }} variant="contained" color="primary" fullWidth>
         Finalizar
       </Button>
     </div>
