@@ -226,7 +226,8 @@ function AuthProvider({ children }) {
           phone: tel,
           dni: dniString,
           company: { id: null },
-          photo: 'www.photo.com'
+          photo:
+            'https://img.freepik.com/foto-gratis/hombre-pelo-corto-traje-negocios-que-lleva-dos-registros_549566-318.jpg'
         }
       }
     });

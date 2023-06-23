@@ -36,7 +36,7 @@ const RootStyle = styled('div')(({ theme }) => ({
 const AccountStyle = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  padding: theme.spacing(2, 2.5),
+  padding: theme.spacing(1.4, 1.5),
   borderRadius: theme.shape.borderRadiusSm,
   backgroundColor: theme.palette.grey[500_12]
 }));
@@ -93,7 +93,7 @@ DashboardSidebar.propTypes = {
 
 export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
   const { pathname } = useLocation();
-  const { user } = useAuth();
+  const { user, company } = useAuth();
 
   const { isCollapse, collapseClick, collapseHover, onToggleCollapse, onHoverEnter, onHoverLeave } =
     useCollapseDrawer();
@@ -147,8 +147,8 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
                 <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
                   {user?.profile?.name}
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {user?.role}
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: 12 }}>
+                  {company?.name}
                 </Typography>
               </Box>
             </AccountStyle>

@@ -3,7 +3,6 @@ import { Form, FormikProvider, useFormik } from 'formik';
 import { useSnackbar } from 'notistack5';
 import React from 'react';
 import { Alert, IconButton, Stack, TextField, Tooltip, Typography } from '@mui/material';
-import Button from '@mui/material/Button';
 import { LoadingButton } from '@material-ui/lab';
 import MuiPhoneNumber from 'material-ui-phone-number';
 import { Icon, InputAdornment } from '@material-ui/core';
@@ -12,12 +11,10 @@ import { InlineIcon } from '@iconify/react';
 import PropTypes from 'prop-types';
 import RequestService from '../../../api/services/service';
 import useAuth from '../../../hooks/useAuth';
-import useIsMountedRef from '../../../hooks/useIsMountedRef';
 
-export default function RegisterCompanyForm({ nextStep, activeStep, handleBack, setPrevValues, prevValues }) {
+export default function RegisterCompanyForm({ nextStep, activeStep, setPrevValues, prevValues }) {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const { user, company, updateCompany, createCompany } = useAuth();
-  const isMountedRef = useIsMountedRef();
+  const { createCompany } = useAuth();
 
   console.log(activeStep);
 
@@ -52,19 +49,27 @@ export default function RegisterCompanyForm({ nextStep, activeStep, handleBack, 
       try {
         console.log(prevValues);
         if (prevValues.id) {
-          const response = await RequestService.updateCompany({ databody: values, id: prevValues.id });
+          await RequestService.updateCompany({ databody: values, id: prevValues.id });
           enqueueSnackbar('Actualización de la empresa completado', {
-            variant: 'success'
+            variant: 'success',
+            action: (key) => (
+              <IconButton onClick={() => closeSnackbar(key)}>
+                <Icon icon="eva:close-fill" />
+              </IconButton>
+            )
           });
         } else {
-          const response = await createCompany({ databody: values });
+          await createCompany({ databody: values });
           enqueueSnackbar('Registro de la empresa completado', {
-            variant: 'success'
+            variant: 'success',
+            action: (key) => (
+              <IconButton onClick={() => closeSnackbar(key)}>
+                <Icon icon="eva:close-fill" />
+              </IconButton>
+            )
           });
-          nextStep();
           setPrevValues(values);
         }
-        // TODO: si tengo prevValues, entonces hago un update, sino hago un create
         nextStep();
         setSubmitting(false);
       } catch (error) {

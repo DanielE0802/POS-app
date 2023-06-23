@@ -12,12 +12,10 @@ import PropTypes from 'prop-types';
 import RequestService from '../../../api/services/service';
 import useAuth from '../../../hooks/useAuth';
 import { MIconButton } from '../../@material-extend';
-import useIsMountedRef from '../../../hooks/useIsMountedRef';
 
-export default function RegisterPDVForm({ setActiveStep, activeStep, handleBack, setPrevValues, prevValues }) {
+export default function RegisterPDVForm({ setActiveStep, handleBack, setPrevValues, prevValues }) {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const { company, pdvCompany, updatePDV, createPDV } = useAuth();
-  const isMountedRef = useIsMountedRef();
+  const { company, createPDV } = useAuth();
 
   const RegisterPDVSchema = Yup.object().shape({
     name: Yup.string().required('Nombre requerido'),
@@ -40,7 +38,7 @@ export default function RegisterPDVForm({ setActiveStep, activeStep, handleBack,
       company: ''
     },
     validationSchema: RegisterPDVSchema,
-    onSubmit: async (values, { setErrors, setSubmitting, setValues, setFieldValue }) => {
+    onSubmit: async (values, { setErrors, setSubmitting }) => {
       try {
         const databody = {
           name: values.name,
@@ -53,7 +51,7 @@ export default function RegisterPDVForm({ setActiveStep, activeStep, handleBack,
             id: values.city.id
           }
         };
-        const response = await createPDV(databody);
+        await createPDV(databody);
         // TODO: faltan municipios en el endpoint (cali por ejemplo)
 
         enqueueSnackbar('Registro del punto de venta completado', {
@@ -193,10 +191,10 @@ export default function RegisterPDVForm({ setActiveStep, activeStep, handleBack,
   );
 }
 
-// RegisterPDVForm.propTypes = {
-//   nextStep: PropTypes.func,
-//   activeStep: PropTypes.number,
-//   handleBack: PropTypes.func,
-//   setPrevValues: PropTypes.func,
-//   prevValues: PropTypes.object
-// };
+RegisterPDVForm.propTypes = {
+  nextStep: PropTypes.func,
+  handleBack: PropTypes.func,
+  setPrevValues: PropTypes.func,
+  prevValues: PropTypes.object,
+  setActiveStep: PropTypes.func
+};

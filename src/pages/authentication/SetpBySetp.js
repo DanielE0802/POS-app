@@ -12,7 +12,6 @@ import { styled } from '@material-ui/core/styles';
 import { useNavigate } from 'react-router';
 import { useSnackbar } from 'notistack5';
 import RegisterSummary from '../../components/authentication/company/RegisterSummary';
-import RegisterAddUserForm from '../../components/authentication/company/RegisterAddUserForm';
 import RegisterPDVForm from '../../components/authentication/company/RegisterPDVForm';
 import Page from '../../components/Page';
 import useAuth from '../../hooks/useAuth';
@@ -63,21 +62,6 @@ export default function SetpBySetp() {
     console.log('handleBack');
     console.log(activeStep);
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
-  const handleSkip = () => {
-    if (!isStepOptional(activeStep)) {
-      // You probably want to guard against something like this,
-      // it should never occur unless someone's actively trying to break something.
-      throw new Error("You can't skip a step that isn't optional.");
-    }
-
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    setSkipped((prevSkipped) => {
-      const newSkipped = new Set(prevSkipped.values());
-      newSkipped.add(activeStep);
-      return newSkipped;
-    });
   };
 
   const handleReset = () => {
