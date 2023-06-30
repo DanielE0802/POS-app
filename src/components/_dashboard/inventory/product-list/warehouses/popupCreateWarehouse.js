@@ -5,51 +5,31 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  Typography,
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
   TextField,
-  Autocomplete,
-  Switch
+  Autocomplete
 } from '@material-ui/core';
-import { Slide } from '@mui/material';
 import React, { useCallback, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Form, FormikProvider, useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useSnackbar } from 'notistack5';
 import { LoadingButton } from '@material-ui/lab';
-import { styled } from '@material-ui/core/styles';
-import { UploadMultiFile } from '../../../../upload';
+import { useDispatch } from 'react-redux';
+import { getWarehouses } from '../../../../../redux/slices/warehouses';
 import fakeRequest from '../../../../../utils/fakeRequest';
 
 import RequestService from '../../../../../api/services/service';
-
-const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
-
-const LabelStyle = styled(Typography)(({ theme }) => ({
-  ...theme.typography.subtitle2,
-  color: theme.palette.text.secondary,
-  marginBottom: theme.spacing(1)
-}));
+import useAuth from '../../../../../hooks/useAuth';
 
 function PopupCreateWarehouse({ open, handleClose }) {
   const { enqueueSnackbar } = useSnackbar();
 
+  const { company } = useAuth();
+  const dispatch = useDispatch();
+
   const [deparments, setDepartments] = React.useState([]);
   const [department, setDepartment] = React.useState('');
   const [cities, setCities] = React.useState([]);
-
-  const fetchDepartments = async () => {
-    const response = await RequestService.getDepartments();
-    // change departamentos to label in the array
-    const departamentos = response.data.map((departamento) => ({ label: departamento.departamento }));
-    setDepartments(departamentos);
-  };
 
   // create category schema
   const createCategorySchema = Yup.object().shape({
@@ -76,11 +56,23 @@ function PopupCreateWarehouse({ open, handleClose }) {
     },
     onSubmit: async (values, { setSubmitting, resetForm, setErrors }) => {
       try {
-        console.log(values);
-        await fakeRequest(500);
+        const dataBody = {
+          name: values.name,
+          description: values.description,
+          address: values.address,
+          phone: values.phone,
+          main: false,
+          company: { id: company.id },
+          location: {
+            id: values.city.id
+          }
+        };
+
+        await RequestService.createPDV({ databody: dataBody });
+        dispatch(getWarehouses(true));
         resetForm();
         setSubmitting(false);
-        enqueueSnackbar('Create success', { variant: 'success' });
+        enqueueSnackbar(`Se ha creado existosamente el PDV ${values.name}`, { variant: 'success' });
         handleClose();
       } catch (error) {
         console.error(error);
@@ -92,21 +84,21 @@ function PopupCreateWarehouse({ open, handleClose }) {
   const { errors, values, touched, handleSubmit, isSubmitting, setFieldValue, getFieldProps } = formik;
 
   useEffect(() => {
-    console.log(department);
-    if (department) {
-      const fetchCities = async () => {
-        const response = await RequestService.getCities({ department: department.label });
-        // change departamentos to label in the array
-        const cities = response.data.map((city) => ({ label: city.municipio }));
-        setCities(cities);
-      };
-      fetchCities();
-    }
-  }, [department]);
+    console.log('este es el register pdv form');
+    locations();
+  }, []);
+
+  const locations = async () => {
+    const resp = (await RequestService.getLocations(true)).data;
+    setDepartments(resp);
+  };
 
   useEffect(() => {
-    fetchDepartments();
-  }, []);
+    // setMunicipios(department?.towns);
+    const towns = department?.towns ? department.towns : [];
+    setCities(towns);
+    // setMunicipios(municipiosOfDepartment);
+  }, [values.departament, department]);
 
   return (
     <Dialog maxWidth="md" open={open} onClose={handleClose}>
@@ -135,6 +127,7 @@ function PopupCreateWarehouse({ open, handleClose }) {
               sx={{ mb: 2 }}
               fullWidth
               autoComplete="departament"
+              getOptionLabel={(option) => option.name || ''}
               options={deparments}
               {...getFieldProps('departament')}
               onChange={(event, value) => {
@@ -151,6 +144,7 @@ function PopupCreateWarehouse({ open, handleClose }) {
               sx={{ mb: 2 }}
               fullWidth
               autoComplete="city"
+              getOptionLabel={(option) => option.name || ''}
               options={cities}
               {...getFieldProps('city')}
               onChange={(event, value) => {

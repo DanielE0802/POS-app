@@ -108,7 +108,7 @@ export default function SetpBySetp() {
       <Container>
         <ContentStyle>
           <Box sx={{ width: '100%' }}>
-            <Stepper activeStep={activeStep}>
+            <Stepper activeStep={activeStep} alternativeLabel>
               {steps.map((label, index) => {
                 const stepProps = {};
                 const labelProps = {};
@@ -147,6 +147,7 @@ export default function SetpBySetp() {
               nextStep={handleNext}
               activeStep={activeStep}
               handleBack={handleBack}
+              setActiveStep={setActiveStep}
             />
           )}
           {activeStep === 1 && (

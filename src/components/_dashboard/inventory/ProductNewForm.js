@@ -2,8 +2,7 @@ import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import { useSnackbar } from 'notistack5';
 import { useNavigate } from 'react-router-dom';
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { NumericFormat } from 'react-number-format';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Form, FormikProvider, useFormik } from 'formik';
 // material
 import { styled } from '@material-ui/core/styles';
@@ -12,7 +11,6 @@ import {
   Divider,
   Card,
   IconButton,
-  Chip,
   Grid,
   Stack,
   Radio,
@@ -34,10 +32,8 @@ import {
   ListItemAvatar,
   Avatar,
   ListItemText,
-  Button,
   Link,
-  Box,
-  Paper
+  Box
 } from '@material-ui/core';
 import Zoom from '@mui/material/Zoom';
 
@@ -57,16 +53,21 @@ import PopupAssingInventory from './PopupAssignInventory';
 import CustomTooltip from './common/CustomTooltip';
 import { NumericFormatCustom } from './NumericFormatCustom';
 import PopupAddVariantes from './PopupAddVariantes';
-import fakeRequest from '../../../utils/fakeRequest';
 // routes
 import { PATH_DASHBOARD } from '../../../routes/paths';
 //
 import { QuillEditor } from '../../editor';
-import { UploadMultiFile } from '../../upload';
+import { UploadMultiFile, UploadSingleFile } from '../../upload';
 import RequestService from '../../../api/services/service';
 import { useDispatch, useSelector } from '../../../redux/store';
-import { getCategories, getProductsInCategory, switchPopupState } from '../../../redux/slices/categories';
+import { getCategories } from '../../../redux/slices/categories';
 import PopupCreateCategory from './product-list/categories/PopupCreateCategory';
+import { getWarehouses } from '../../../redux/slices/warehouses';
+
+// Functions
+
+import { calculatePriceBase, calculatePriceSale } from './product-list/calculatePriceFunctions/priceFunctions';
+// import calculatePriceSale from './product-list/calculatePriceFunctions/priceFunctions';
 
 // ----------------------------------------------------------------------
 const TAXES_OPTIONS = [
@@ -103,7 +104,10 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     sku: Yup.string().optional(),
     barCode: Yup.string().required('Código de barras es requerido'),
     wareHouse: Yup.array().required('Punto de venta es requerido'),
-    category: Yup.string().required('Categoria es requerido')
+    category: Yup.string().required('Categoria es requerido'),
+    brand: Yup.string().required('Marca es requerido'),
+    quantityStock: Yup.number().required('Cantidad en stock es requerido'),
+    sellInNegative: Yup.bool().optional()
   });
 
   const formik = useFormik({
@@ -111,7 +115,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     initialValues: {
       name: currentProduct?.name || '',
       description: currentProduct?.description || '',
-      images: currentProduct?.images || [],
+      images: 'https://i.linio.com/p/5b14b66fe177776b12c42b86805c4ce0-product.webp',
       barCode: currentProduct?.barCode || '',
       sku: currentProduct?.sku || '',
       typeProduct: currentProduct?.typeProduct || 'simple',
@@ -121,19 +125,37 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
       sellInNegative: currentProduct?.sellInNegative || false,
       // category: currentProduct?.category || CATEGORY_OPTION[0].name,
       taxesOption: currentProduct?.taxesOption || 0,
-      wareHouse: currentProduct?.wareHouse || [{ title: 'Principal', id: 0, quantity: 0, minQuantity: 0 }],
-      category: currentProduct?.category || ''
+      wareHouse: currentProduct?.wareHouse || [{ name: '', id: 0, quantity: 0, minQuantity: 0 }],
+      category: currentProduct?.category || '',
+      quantityStock: currentProduct?.quantityStock || 0,
+      brand: currentProduct?.brand || ''
     },
     validationSchema: NewProductSchema,
-    validate: (values) => {
-      console.log(values);
-    },
+    // validate: (values) => {
+    //   console.log(values);
+    // },
 
     onSubmit: async (values, { setSubmitting, resetForm, setErrors }) => {
       try {
-        console.log('submit');
-        await fakeRequest(500);
-        await RequestService.createProduct(values);
+        const data = {
+          name: values.name,
+          description: values.description,
+          images: values.images,
+          barCode: values.barCode,
+          sku: values.sku,
+          typeProduct: values.typeProduct,
+          priceBase: values.priceBase,
+          priceSale: values.priceSale,
+          state: values.state,
+          sellInNegative: values.sellInNegative,
+          category: { id: values.category },
+          taxesOption: values.taxesOption,
+          productPdv: values.wareHouse,
+          quantityStock: values.wareHouse.reduce((acc, item) => acc + item.quantity, 0),
+          brand: { id: values.brand }
+        };
+        await RequestService.createProduct(data);
+        // En el body que se envia cambiar el wareHouse por productPdv
         resetForm();
         setSubmitting(false);
         enqueueSnackbar(!isEdit ? 'Create success' : 'Update success', { variant: 'success' });
@@ -162,6 +184,19 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     [setFieldValue]
   );
 
+  const handleDropSingleFile = useCallback(
+    (acceptedFiles) => {
+      const file = acceptedFiles[0];
+      if (file) {
+        setFieldValue('images', {
+          ...file,
+          preview: URL.createObjectURL(file)
+        });
+      }
+    },
+    [setFieldValue]
+  );
+
   const handleRemoveAll = () => {
     setFieldValue('images', []);
   };
@@ -171,13 +206,9 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     setFieldValue('images', filteredItems);
   };
 
-  const handlePriceTaxes = (event) => {
-    console.log('Hola');
-    const prueba = getFieldProps('taxesOption');
-    console.log(event.target.value);
-    console.log(values.taxesOption);
-    console.log(prueba);
-  };
+  const { warehouses } = useSelector((state) => state.warehouses);
+  const { categories } = useSelector((state) => state.categories);
+  const { brands } = useSelector((state) => state.brands);
 
   // const webcamRef = useRef(null);
 
@@ -227,41 +258,10 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     setFieldValue('typeProduct', state);
   };
 
-  const calculatePriceSale = (priceBase, taxPercentage) => {
-    if (priceBase === 0 || Number.isNaN(priceBase) || typeof priceBase === 'string') return 0;
-    if (taxPercentage === 0) return priceBase;
-
-    const taxAmount = (priceBase * taxPercentage) / 100; // Calcular el monto del impuesto
-    const priceSale = priceBase + taxAmount; // Calcular el precio total sumando el monto del impuesto
-    if (priceSale % 1 !== 0) {
-      return Number(priceSale.toFixed(2));
-    }
-    // Verificar si es un string
-    console.log(typeof priceSale);
-    return priceSale;
-  };
-
-  const calculatePriceBase = (priceSale, taxPercentage) => {
-    if (priceSale === 0 || Number.isNaN(priceSale)) return 0;
-    const priceBase = (priceSale * 100) / (100 + taxPercentage); // Calcular el precio base
-    if (priceBase % 1 !== 0) {
-      return Number(priceBase.toFixed(2));
-    }
-
-    return priceBase;
-  };
-
   useEffect(() => {
-    // Obtener el valor actual de taxesOption
     const taxPercentage = values.taxesOption;
-
-    // Calcular el nuevo priceSale utilizando calculatePriceSale
     const newPriceSale = calculatePriceSale(values.priceBase, taxPercentage);
-
-    // Actualizar el valor de priceSale en el estado de Formik
     setFieldValue('priceSale', newPriceSale);
-
-    // Notificar a Formik que se ha realizado un cambio en el campo priceSale
     setFieldTouched('priceSale', true);
   }, [values.taxesOption, setFieldValue, setFieldTouched, values.priceBase]);
 
@@ -274,7 +274,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
       return true;
     }
     if (values.wareHouse.some((item) => item.id === wareHouse.id)) {
-      enqueueSnackbar(`El punto de venta ${wareHouse.title} ya esta seleccionada, asignale una cantidad editandola.`, {
+      enqueueSnackbar(`El punto de venta ${wareHouse.name} ya esta seleccionada, asignale una cantidad editandola.`, {
         variant: 'warning'
       });
       return false;
@@ -282,13 +282,13 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     setFieldValue('wareHouse', [
       ...values.wareHouse,
       {
-        title: wareHouse.title,
+        name: wareHouse.name,
         id: wareHouse.id,
         quantity,
         minQuantity
       }
     ]);
-    enqueueSnackbar(`El punto de venta ${wareHouse.title} fue asignado correctamente.`, {
+    enqueueSnackbar(`El punto de venta ${wareHouse.name} fue asignado correctamente.`, {
       variant: 'success'
     });
     handleClosePopupWarehouse();
@@ -308,7 +308,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
       }
       if (item.id === warehouseEdit.id) {
         return {
-          title: wareHouse.title,
+          name: wareHouse.name,
           id: wareHouse.id,
           quantity,
           minQuantity
@@ -344,29 +344,20 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
   const handleClosePopupWarehouse = () => {
     setOpenPopupWarehouse(false);
   };
-  const [updatedElement, setUpdatedElement] = useState(null);
 
   // control category
   const dispatch = useDispatch();
-  const { categories } = useSelector((state) => state.categories);
-  const { brands } = useSelector((state) => state.brands);
 
   // Get categories and get products in category from API
   useEffect(() => {
     dispatch(getCategories());
-    console.log('get categories');
   }, [dispatch]);
 
   useEffect(() => {
     dispatch(getBrands());
   }, [dispatch]);
 
-  useEffect(() => {
-    console.log(brands);
-  }, [brands]);
-
   const [searchQueryCategory, setSearchQueryCategory] = React.useState('');
-  const [searchResultsCategory, setSearchResults] = React.useState(categories);
 
   //   data
   const [selectedOptionCategory, setSelectedOptionCategory] = React.useState(''); // Nuevo estado para almacenar la opción seleccionada
@@ -399,8 +390,6 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
   // Brands
 
   const [searchQueryBrand, setSearchQueryBrand] = React.useState('');
-  const [searchResultsBrand, setSearchResultsBrand] = React.useState(brands);
-
   const [selectedOptionBrand, setSelectedOptionBrand] = React.useState(''); // Nuevo estado para almacenar la opción seleccionada
 
   const handleBrandSelect = (event, option) => {
@@ -421,6 +410,17 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
   const handleClickOpenPopupBrand = () => {
     setOpenPopupBrand(true);
   };
+
+  useEffect(() => {
+    dispatch(getWarehouses());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (warehouses.length > 0) {
+      const fieldwarehouse = [warehouses[0]];
+      setFieldValue('wareHouse', fieldwarehouse);
+    }
+  }, [warehouses, setFieldValue]);
 
   return (
     <FormikProvider value={formik}>
@@ -694,7 +694,6 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                     fullWidth
                     label="Precio base"
                     onChange={(e) => {
-                      console.log('change price base');
                       const priceBase = parseFloat(e.target.value);
                       const taxPercentage = values.taxesOption; // Obtener el porcentaje de impuesto según la opción seleccionada
                       const priceSale = calculatePriceSale(priceBase, taxPercentage); // Calcular el precio total
@@ -769,8 +768,10 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                     </ListItemAvatar>
                     <ListItemText
                       onClick={() => setEditWareHouse(item)}
-                      primary={item.title}
-                      secondary={`Cantidad: ${item.quantity} Cantidad minima: ${item.minQuantity}`}
+                      primary={item.name}
+                      secondary={`Cantidad: ${item.quantity ? item.quantity : 0} Cantidad minima: ${
+                        item.minQuantity ? item.minQuantity : 0
+                      }`}
                     />
                     <MenuCategories
                       element={item} // Agrega esta línea
@@ -799,12 +800,22 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                   {values.barCode && <Typography variant="subtitle2"> Código: {values.barCode}</Typography>}
                   {values.sku && <Typography variant="subtitle2"> SKU: {values.sku}</Typography>}
                   <LabelStyle>Imagen del producto</LabelStyle>
-                  <UploadMultiFile
+                  {/* <UploadMultiFile
                     showPreview
                     maxSize={3145728}
                     accept="image/*"
                     files={values.images}
                     onDrop={handleDrop}
+                    onRemove={handleRemove}
+                    onRemoveAll={handleRemoveAll}
+                    error={Boolean(touched.images && errors.images)}
+                  /> */}
+                  <UploadSingleFile
+                    showPreview
+                    maxSize={3145728}
+                    accept="image/*"
+                    file={values.images}
+                    onDrop={handleDropSingleFile}
                     onRemove={handleRemove}
                     onRemoveAll={handleRemoveAll}
                     error={Boolean(touched.images && errors.images)}

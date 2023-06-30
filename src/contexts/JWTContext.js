@@ -215,7 +215,6 @@ function AuthProvider({ children }) {
 
   const register = async (email, password, firstName, lastName, dni, tel) => {
     const dniString = dni.toString();
-    const phoneToString = tel.toString();
     const response = await RequestService.fetchRegisterUser({
       databody: {
         password,
@@ -223,7 +222,7 @@ function AuthProvider({ children }) {
           name: firstName,
           lastname: lastName,
           email,
-          phone: tel,
+          phone: `+${tel}`,
           dni: dniString,
           company: { id: null },
           photo:

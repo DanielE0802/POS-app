@@ -28,6 +28,8 @@ import PropTypes from 'prop-types';
 import { Form, FormikProvider, useFormik } from 'formik';
 import { LoadingButton } from '@material-ui/lab';
 import { useSnackbar } from 'notistack5';
+import { useDispatch, useSelector } from 'react-redux';
+import { getWarehouses } from '../../../redux/slices/warehouses';
 import { ButtonAutocomplete } from './common/ButtonAutocomplete';
 import SearchNotFound from '../../SearchNotFound';
 import PopupCreateWarehouse from './product-list/warehouses/popupCreateWarehouse';
@@ -57,7 +59,7 @@ export default function PopupAssingInventory({
 
   const assignInventorySchema = Yup.object().shape({
     warehouse: Yup.object({
-      title: Yup.string().required('Punto de venta requerido'),
+      name: Yup.string().required('Punto de venta requerido'),
       id: Yup.string().required('Punto de venta requerido')
     })
       .required('Punto de venta requerido')
@@ -70,7 +72,7 @@ export default function PopupAssingInventory({
 
   const Formik = useFormik({
     initialValues: {
-      warehouse: { title: '', id: '' },
+      warehouse: { name: '', id: '' },
       quantity: '',
       minQuantity: 0,
       edit: false
@@ -96,12 +98,7 @@ export default function PopupAssingInventory({
   const { errors, touched, handleSubmit, isSubmitting, getFieldProps, setFieldValue, values } = Formik;
 
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [searchResults, setSearchResults] = React.useState([
-    { title: 'Principal', id: 0 },
-    { title: 'Cali', id: 1 },
-    { title: 'Palmira', id: 2 },
-    { title: 'Pereira', id: 3 }
-  ]);
+  const [searchResults, setSearchResults] = React.useState([]);
 
   const [selectedOption, setSelectedOption] = React.useState('');
   const [quantity, setQuantity] = React.useState('');
@@ -115,12 +112,12 @@ export default function PopupAssingInventory({
 
   useEffect(() => {
     if (warehouseEdit) {
-      setFieldValue('warehouse', { title: warehouseEdit.title, id: warehouseEdit.id });
+      setFieldValue('warehouse', { name: warehouseEdit.name, id: warehouseEdit.id });
       setFieldValue('quantity', warehouseEdit.quantity);
       setFieldValue('minQuantity', warehouseEdit.minQuantity);
       setFieldValue('edit', true);
     } else {
-      setFieldValue('warehouse', { title: '', id: '' });
+      setFieldValue('warehouse', { name: '', id: '' });
       setFieldValue('quantity', '');
       setFieldValue('minQuantity', '');
       setFieldValue('edit', false);
@@ -133,7 +130,7 @@ export default function PopupAssingInventory({
 
   const isOptionEqualToValue = (option, value) => {
     if (option && value) {
-      return option.id === value.id && option.title === value.title;
+      return option.id === value.id && option.name === value.name;
     }
     return false;
   };
@@ -161,6 +158,19 @@ export default function PopupAssingInventory({
     handleSubmit();
   };
 
+  // const dispatch = useDispatch();
+
+  // useEffect(() => {
+  //   dispatch(getWarehouses());
+  // }, [dispatch]);
+
+  const { warehouses } = useSelector((state) => state.warehouses);
+
+  useEffect(() => {
+    console.log(warehouses);
+    setSearchResults(warehouses);
+  }, [warehouses]);
+
   return (
     <Stack>
       <Button variant="outlined" sx={{ mt: 3 }} onClick={setAssignWarehouse}>
@@ -183,7 +193,7 @@ export default function PopupAssingInventory({
                 fullWidth
                 disablePortal
                 value={values.warehouse}
-                getOptionLabel={(option) => option.title}
+                getOptionLabel={(option) => option.name}
                 {...getFieldProps('warehouse')}
                 options={searchResults}
                 inputValue={searchQuery}
@@ -214,8 +224,8 @@ export default function PopupAssingInventory({
                   />
                 )}
                 renderOption={(props, option) => {
-                  const matches = match(option.title, searchQuery);
-                  const parts = parse(option.title, matches);
+                  const matches = match(option.name, searchQuery);
+                  const parts = parse(option.name, matches);
 
                   return (
                     <li {...props}>

@@ -10,18 +10,35 @@ import MuiPhoneNumber from 'material-ui-phone-number';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { capitalCase } from 'change-case';
-
 // material
 import { Stack, TextField, IconButton, InputAdornment, Alert } from '@material-ui/core';
 import { LoadingButton } from '@material-ui/lab';
 // hooks
 import { Link, Tooltip } from '@mui/material';
 import { useNavigate } from 'react-router';
+import PhoneInput from 'react-phone-input-2';
+import { makeStyles, createStyles } from '@material-ui/styles';
 import useAuth from '../../../hooks/useAuth';
 import useIsMountedRef from '../../../hooks/useIsMountedRef';
 //
 import { MIconButton } from '../../@material-extend';
 // ----------------------------------------------------------------------
+
+const useStyles = makeStyles((theme) => ({
+  phoneInput: {
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: theme.palette?.primary.main
+      },
+      '&:hover fieldset': {
+        borderColor: theme.palette.primary.dark
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: theme.palette.primary.main
+      }
+    }
+  }
+}));
 
 export default function RegisterForm() {
   const { register } = useAuth();
@@ -95,6 +112,7 @@ export default function RegisterForm() {
   });
 
   const { errors, touched, handleSubmit, isSubmitting, getFieldProps } = formik;
+  const classes = useStyles();
 
   return (
     <FormikProvider value={formik}>

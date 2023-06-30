@@ -68,6 +68,7 @@ export default function Router() {
             </GuestGuard>
           )
         },
+        { path: '/POS', element: <POS /> },
         { path: '/reset-password', element: <ResetPassword /> },
         { path: '/verify', element: <VerifyCode /> }
       ]
@@ -179,6 +180,10 @@ export default function Router() {
 }
 
 // IMPORT COMPONENTS
+
+// POS
+
+const POS = Loadable(lazy(() => import('../pages/dashboard/POS')));
 
 // Authentication
 const Login = Loadable(lazy(() => import('../pages/authentication/Login')));

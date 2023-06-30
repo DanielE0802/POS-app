@@ -12,11 +12,9 @@ import PropTypes from 'prop-types';
 import RequestService from '../../../api/services/service';
 import useAuth from '../../../hooks/useAuth';
 
-export default function RegisterCompanyForm({ nextStep, activeStep, setPrevValues, prevValues }) {
+export default function RegisterCompanyForm({ setActiveStep, activeStep, setPrevValues, prevValues }) {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { createCompany } = useAuth();
-
-  console.log(activeStep);
 
   const RegisterCompanySchema = Yup.object().shape({
     name: Yup.string()
@@ -70,7 +68,7 @@ export default function RegisterCompanyForm({ nextStep, activeStep, setPrevValue
           });
           setPrevValues(values);
         }
-        nextStep();
+        setActiveStep(1);
         setSubmitting(false);
       } catch (error) {
         console.error(error);
@@ -132,6 +130,7 @@ export default function RegisterCompanyForm({ nextStep, activeStep, setPrevValue
                 formik.setFieldValue('phoneNumber', value);
               }}
               value={formik.values.phoneNumber}
+              autoFormat
               name="phoneNumber"
               defaultCountry="co"
               label="Número de teléfono"

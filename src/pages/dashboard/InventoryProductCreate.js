@@ -34,12 +34,12 @@ export default function InventoryProductCreate() {
     <Page title="Inventario: Crear producto">
       <Container maxWidth={themeStretch ? false : 'lg'}>
         <HeaderBreadcrumbs
-          heading={!isEdit ? 'Crear producto' : 'Edit product'}
+          heading={!isEdit ? 'Crear producto' : 'Editar producto'}
           links={[
             { name: 'Dashboard', href: PATH_DASHBOARD.root },
             {
               name: 'Inventario',
-              href: PATH_DASHBOARD.inventory.root
+              href: PATH_DASHBOARD.inventory.list
             },
             { name: !isEdit ? 'New product' : name }
           ]}

@@ -4,27 +4,16 @@ import { useState, useEffect, React, useCallback } from 'react';
 import { sentenceCase } from 'change-case';
 
 import plusFill from '@iconify/icons-eva/plus-fill';
-import checkmarkCircle2Fill from '@iconify/icons-eva/checkmark-circle-2-fill';
 import { Link as RouterLink } from 'react-router-dom';
 // material
 import { useTheme, styled } from '@material-ui/core/styles';
 import {
   Box,
-  Card,
-  Table,
   Button,
-  TableRow,
-  Checkbox,
-  TableBody,
-  TableCell,
   Container,
   Typography,
-  TableContainer,
-  TablePagination,
-  Stack,
   Rating,
   Pagination,
-  LinearProgress,
   TextField,
   IconButton,
   InputAdornment
@@ -38,15 +27,12 @@ import {
 } from '@material-ui/data-grid';
 import { Close } from '@material-ui/icons';
 import searchFill from '@iconify/icons-eva/search-fill';
-import mockData from '../../utils/mock-data';
-import createAvatar from '../../utils/createAvatar';
 import { MIconButton, MAvatar } from '../../components/@material-extend';
 import { fPercent, fCurrency } from '../../utils/formatNumber';
 // redux
 import { useDispatch, useSelector } from '../../redux/store';
 import { getProducts, deleteProduct } from '../../redux/slices/product';
 // utils
-import { fDate } from '../../utils/formatTime';
 
 // routes
 import { PATH_DASHBOARD } from '../../routes/paths';
@@ -55,24 +41,9 @@ import useSettings from '../../hooks/useSettings';
 // components
 import Page from '../../components/Page';
 import Label from '../../components/Label';
-import Scrollbar from '../../components/Scrollbar';
-import SearchNotFound from '../../components/SearchNotFound';
 import HeaderBreadcrumbs from '../../components/HeaderBreadcrumbs';
-import {
-  ProductListHead,
-  ProductListToolbar,
-  ProductMoreMenu
-} from '../../components/_dashboard/inventory/product-list';
 
 // ----------------------------------------------------------------------
-
-// const TABLE_HEAD = [
-//   { id: 'name', label: 'Product', alignRight: false },
-//   { id: 'createdAt', label: 'Create at', alignRight: false },
-//   { id: 'inventoryType', label: 'Status', alignRight: false },
-//   { id: 'price', label: 'Price', alignRight: true, numeric: true },
-//   { id: '' }
-// ];
 
 function CustomPagination() {
   const { state, apiRef } = useGridSlotComponentProps();
@@ -136,7 +107,7 @@ const columns = [
     hide: true
   },
   {
-    field: 'img',
+    field: 'images',
     headerName: 'Imagen',
     width: 100,
     sortable: false,
@@ -144,9 +115,8 @@ const columns = [
     disableColumnMenu: true,
     align: 'center',
     renderCell: (params) => {
-      const imgUrl =
-        'https://copservir.vtexassets.com/arquivos/ids/784090/GASEOSA-COCA-COLA-ORIGINAL_F.png?v=637964068701300000';
-      return <ThumbImgStyle variant="square" alt={params.row.name} src={imgUrl} sx={{ width: 74, height: 74 }} />;
+      const imgUrl = params.getValue(params.id, 'images');
+      return <ThumbImgStyle variant="square" alt={params.row.name} src={imgUrl[0]} sx={{ width: 74, height: 74 }} />;
     }
   },
   {

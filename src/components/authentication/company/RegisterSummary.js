@@ -92,7 +92,6 @@ export default function RegisterSummary() {
       <Card sx={{ p: 3, overflow: 'visible', zIndex: 99, mt: 3 }}>
         <Typography variant="h4">Información de punto de venta principal</Typography>
         <Divider sx={{ mb: 3, mt: 0.5 }} />
-        {console.log(pdvCompany)}
         {pdvCompany !== '' && pdvCompany !== null && pdvCompany !== null ? (
           <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
