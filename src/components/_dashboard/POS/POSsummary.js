@@ -18,6 +18,7 @@ import {
 // utils
 import { IconButton } from '@mui/material';
 import { useTheme } from '@material-ui/core/styles';
+import POSProductList from '../e-commerce/checkout/POSProductList';
 import { fCurrency } from '../../../utils/formatNumber';
 
 // ----------------------------------------------------------------------
@@ -85,6 +86,8 @@ export default function POSsummary({
 
       <Divider />
 
+      <POSProductList />
+
       <CardContent sx={{ background: theme.palette.grey[200], borderRadius: 1, margin: 2, padding: 2 }}>
         <Stack spacing={2}>
           <Stack direction="row" justifyContent="space-between">
@@ -116,13 +119,13 @@ export default function POSsummary({
               <Typography variant="subtitle1" sx={{ color: 'error.main' }}>
                 {fCurrency(total)}
               </Typography>
-              <Typography variant="caption" sx={{ fontStyle: 'italic' }}>
+              {/* <Typography variant="caption" sx={{ fontStyle: 'italic' }}>
                 (VAT included if applicable)
-              </Typography>
+              </Typography> */}
             </Box>
           </Stack>
 
-          {enableDiscount && (
+          {/* {enableDiscount && (
             <TextField
               fullWidth
               placeholder="Discount codes / Gifts"
@@ -137,7 +140,7 @@ export default function POSsummary({
                 )
               }}
             />
-          )}
+          )} */}
         </Stack>
       </CardContent>
       <Button

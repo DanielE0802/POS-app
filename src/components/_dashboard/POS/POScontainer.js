@@ -83,7 +83,7 @@ function POScontainer() {
 
   const [view, setView] = React.useState(1);
 
-  const drawerWidth = 380;
+  const drawerWidth = 500;
   const theme = useTheme();
   const { values, handleSubmit } = formik;
   const totalItems = sum(values.products.map((item) => item.quantity));
@@ -232,7 +232,6 @@ function POScontainer() {
                   /> */}
                   <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
                     <TextField size="small" fullWidth label="Tipo de venta" name="saleType" />
-                    <TextField size="small" fullWidth label="Fecha" name="date" />
                     <TextField size="small" fullWidth label="IVA" name="iva" />
 
                     {/* Campo de fecha controlado con estado y función de cambio */}
@@ -337,10 +336,7 @@ function POScontainer() {
               <CardHeader
                 title={
                   <Typography sx={{ color: theme.palette.text.primary }} variant="h6">
-                    Venta POS
-                    <Typography component="span" sx={{ color: 'text.secondary' }}>
-                      &nbsp;(PDV: Palmira)
-                    </Typography>
+                    Venta 1
                   </Typography>
                 }
                 sx={{ p: 2 }}
