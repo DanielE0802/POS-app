@@ -65,7 +65,7 @@ function Incrementer({ available, quantity, onIncrease, onDecrease }) {
         </MIconButton>
       </IncrementerStyle>
       <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-        available: {available}
+        Disponible: {available}
       </Typography>
     </Box>
   );
@@ -79,17 +79,39 @@ ProductList.propTypes = {
 };
 
 export default function ProductList({ formik, onDelete, onIncreaseQuantity, onDecreaseQuantity }) {
-  const { products } = formik.values;
+  // const { products } = formik.values;
+  const products = [
+    {
+      id: 1,
+      name: 'Nike Air Force 1 NDESTRUKT',
+      size: 'US 10',
+      price: 130,
+      color: '#212121',
+      cover: '/static/mock-images/products/product_1.jpg',
+      quantity: 1,
+      available: 5
+    },
+    {
+      id: 2,
+      name: 'Nike Zoom Double Stacked',
+      size: 'US 9',
+      price: 200,
+      color: '#43a047',
+      cover: '/static/mock-images/products/product_2.jpg',
+      quantity: 3,
+      available: 5
+    }
+  ];
 
   return (
     <TableContainer sx={{ minWidth: 720 }}>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Product</TableCell>
-            <TableCell align="left">Price</TableCell>
-            <TableCell align="left">Quantity</TableCell>
-            <TableCell align="right">Total Price</TableCell>
+            <TableCell>Producto</TableCell>
+            <TableCell align="left">Precio</TableCell>
+            <TableCell align="left">Cantidad</TableCell>
+            <TableCell align="right">Precio total</TableCell>
             <TableCell align="right" />
           </TableRow>
         </TableHead>
@@ -101,7 +123,6 @@ export default function ProductList({ formik, onDelete, onIncreaseQuantity, onDe
               <TableRow key={id}>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <ThumbImgStyle alt="product image" src={cover} />
                     <Box>
                       <Typography noWrap variant="subtitle2" sx={{ maxWidth: 240, mb: 0.5 }}>
                         {name}

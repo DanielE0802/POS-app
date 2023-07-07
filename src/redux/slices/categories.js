@@ -1,4 +1,4 @@
-import { sum, map, filter, uniqBy, reject } from 'lodash';
+import { sum, map, filter, uniqBy, reject, get } from 'lodash';
 import { createSlice } from '@reduxjs/toolkit';
 // utils
 import axios from '../../api/axios';
@@ -10,6 +10,7 @@ const initialState = {
   isLoading: false,
   error: false,
   categories: [],
+  openPopup: false,
   products: [],
   product: null,
   sortBy: null,
@@ -92,27 +93,6 @@ const slice = createSlice({
       state.checkout.total = subtotal - discount;
     },
 
-    addCart(state, action) {
-      const product = action.payload;
-      const isEmptyCart = state.checkout.cart.length === 0;
-
-      if (isEmptyCart) {
-        state.checkout.cart = [...state.checkout.cart, product];
-      } else {
-        state.checkout.cart = map(state.checkout.cart, (_product) => {
-          const isExisted = _product.id === product.id;
-          if (isExisted) {
-            return {
-              ..._product,
-              quantity: _product.quantity + 1
-            };
-          }
-          return _product;
-        });
-      }
-      state.checkout.cart = uniqBy([...state.checkout.cart, product], 'id');
-    },
-
     deleteCart(state, action) {
       const updateCart = filter(state.checkout.cart, (item) => item.id !== action.payload);
 
@@ -172,20 +152,10 @@ const slice = createSlice({
       state.checkout.cart = updateCart;
     },
 
-    createBilling(state, action) {
-      state.checkout.billing = action.payload;
-    },
+    // POPUP
 
-    applyDiscount(state, action) {
-      const discount = action.payload;
-      state.checkout.discount = discount;
-      state.checkout.total = state.checkout.subtotal - discount;
-    },
-
-    applyShipping(state, action) {
-      const shipping = action.payload;
-      state.checkout.shipping = shipping;
-      state.checkout.total = state.checkout.subtotal - state.checkout.discount + shipping;
+    switchPopupState(state) {
+      state.openPopup = !state.openPopup;
     }
   }
 });
@@ -196,20 +166,17 @@ export default slice.reducer;
 // Actions
 export const {
   getCart,
-  addCart,
   resetCart,
   onGotoStep,
   onBackStep,
   onNextStep,
   deleteCart,
   deleteProduct,
-  createBilling,
-  applyShipping,
-  applyDiscount,
   filterProducts,
   sortByProducts,
   increaseQuantity,
-  decreaseQuantity
+  decreaseQuantity,
+  switchPopupState
 } = slice.actions;
 
 // ----------------------------------------------------------------------
@@ -223,6 +190,23 @@ export function getCategories() {
     } catch (error) {
       dispatch(slice.actions.hasError(error));
     }
+  };
+}
+
+export function createCategory(databody) {
+  return async (dispatch) => {
+    dispatch(slice.actions.startLoading());
+    try {
+      await RequestService.createCategory(databody);
+    } catch (error) {
+      dispatch(slice.actions.hasError(error));
+    }
+  };
+}
+
+export function switchPopup() {
+  return async (dispatch) => {
+    dispatch(slice.actions.switchPopupState());
   };
 }
 

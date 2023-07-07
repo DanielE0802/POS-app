@@ -44,6 +44,8 @@ import { SettingsProvider } from './contexts/SettingsContext';
 import { CollapseDrawerProvider } from './contexts/CollapseDrawerContext';
 // components
 import LoadingScreen from './components/LoadingScreen';
+import './css/style.css';
+// import 'react-phone-input-2/lib/style.css';
 
 import { AuthProvider } from './contexts/JWTContext';
 // import { AuthProvider } from './contexts/FirebaseContext';

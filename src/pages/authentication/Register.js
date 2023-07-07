@@ -1,10 +1,13 @@
-import { capitalCase } from 'change-case';
 import { Link as RouterLink } from 'react-router-dom';
 // material
+
 import { styled } from '@material-ui/core/styles';
-import { Box, Card, Link, Container, Typography, Tooltip } from '@material-ui/core';
+import { Card, Link, Container } from '@material-ui/core';
 // hooks
+
+import Typography from '@mui/material/Typography';
 import useAuth from '../../hooks/useAuth';
+
 // routes
 import { PATH_AUTH } from '../../routes/paths';
 // layouts
@@ -25,7 +28,7 @@ const RootStyle = styled(Page)(({ theme }) => ({
 
 const SectionStyle = styled(Card)(({ theme }) => ({
   width: '100%',
-  maxWidth: 464,
+  maxWidth: 364,
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
@@ -33,7 +36,7 @@ const SectionStyle = styled(Card)(({ theme }) => ({
 }));
 
 const ContentStyle = styled('div')(({ theme }) => ({
-  maxWidth: 600,
+  maxWidth: 800,
   margin: 'auto',
   display: 'flex',
   minHeight: '100vh',
@@ -67,33 +70,8 @@ export default function Register() {
 
       <Container>
         <ContentStyle>
-          <Box sx={{ mb: 5, display: 'flex', alignItems: 'center' }}>
-            <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h4" gutterBottom>
-                Comience completamente gratis
-              </Typography>
-              <Typography sx={{ color: 'text.secondary' }}>No necesita tarjeta de credito</Typography>
-            </Box>
-            <Tooltip title={capitalCase(method)}>
-              <Box component="img" src={`/static/auth/ic_${method}.png`} sx={{ width: 32, height: 32 }} />
-            </Tooltip>
-          </Box>
-
           {method === 'firebase' && <AuthFirebaseSocials />}
-
           <RegisterForm />
-
-          <Typography variant="body2" align="center" sx={{ color: 'text.secondary', mt: 3 }}>
-            Al registrarse aceptas terminos y condiciones. Por favor lea nuestros&nbsp;
-            <Link underline="always" color="text.primary" href="#">
-              Terminos y condiciones
-            </Link>
-            &nbsp;y&nbsp;
-            <Link underline="always" color="text.primary" href="#">
-              Politica de privacidad
-            </Link>
-            .
-          </Typography>
 
           <MHidden width="smUp">
             <Typography variant="subtitle2" sx={{ mt: 3, textAlign: 'center' }}>

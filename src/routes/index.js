@@ -6,6 +6,7 @@ import LogoOnlyLayout from '../layouts/LogoOnlyLayout';
 // guards
 import GuestGuard from '../guards/GuestGuard';
 import AuthGuard from '../guards/AuthGuard';
+import GuestGuardStep from '../guards/GuestGuardStep';
 // import RoleBasedGuard from '../guards/RoleBasedGuard';
 // components
 import LoadingScreen from '../components/LoadingScreen';
@@ -52,6 +53,14 @@ export default function Router() {
           )
         },
         {
+          path: 'StepByStep',
+          element: (
+            <GuestGuardStep>
+              <SetpBySetp />
+            </GuestGuardStep>
+          )
+        },
+        {
           path: 'register',
           element: (
             <GuestGuard>
@@ -59,6 +68,7 @@ export default function Router() {
             </GuestGuard>
           )
         },
+        { path: '/POS', element: <POS /> },
         { path: '/reset-password', element: <ResetPassword /> },
         { path: '/verify', element: <VerifyCode /> }
       ]
@@ -99,14 +109,13 @@ export default function Router() {
           path: 'inventory',
           children: [
             { path: '/', element: <Navigate to="/dashboard/inventory" replace /> },
-            { path: 'shop', element: <EcommerceShop /> },
             { path: 'product/:name', element: <EcommerceProductDetails /> },
-            { path: 'list', element: <InventoryProductList /> },
+            { path: 'products', element: <InventoryProductList /> },
             { path: 'product/new', element: <InventoryProductCreate /> },
             { path: 'product/:name/edit', element: <EcommerceProductCreate /> },
             { path: 'categories', element: <InventoryCategoriesList /> },
-            { path: 'checkout', element: <EcommerceCheckout /> },
-            { path: 'invoice', element: <InventoryCategoriesList /> }
+            { path: 'warehouses', element: <InventoryWarehousesList /> },
+            { path: 'brands', element: <InventoryBrandList /> }
           ]
         },
         {
@@ -172,11 +181,16 @@ export default function Router() {
 
 // IMPORT COMPONENTS
 
+// POS
+
+const POS = Loadable(lazy(() => import('../pages/dashboard/POS')));
+
 // Authentication
 const Login = Loadable(lazy(() => import('../pages/authentication/Login')));
 const Register = Loadable(lazy(() => import('../pages/authentication/Register')));
 const ResetPassword = Loadable(lazy(() => import('../pages/authentication/ResetPassword')));
 const VerifyCode = Loadable(lazy(() => import('../pages/authentication/VerifyCode')));
+const SetpBySetp = Loadable(lazy(() => import('../pages/authentication/SetpBySetp')));
 // Dashboard
 const GeneralApp = Loadable(lazy(() => import('../pages/dashboard/GeneralApp')));
 const GeneralEcommerce = Loadable(lazy(() => import('../pages/dashboard/GeneralEcommerce')));
@@ -207,7 +221,8 @@ const Kanban = Loadable(lazy(() => import('../pages/dashboard/Kanban')));
 const InventoryProductCreate = Loadable(lazy(() => import('../pages/dashboard/InventoryProductCreate')));
 const InventoryProductList = Loadable(lazy(() => import('../pages/dashboard/InventoryProductList')));
 const InventoryCategoriesList = Loadable(lazy(() => import('../pages/dashboard/InventoryCategoriesList')));
-
+const InventoryWarehousesList = Loadable(lazy(() => import('../pages/dashboard/InventoryWarehousesList')));
+const InventoryBrandList = Loadable(lazy(() => import('../pages/dashboard/InventoryBrandList')));
 // Main
 const ComingSoon = Loadable(lazy(() => import('../pages/ComingSoon')));
 const Maintenance = Loadable(lazy(() => import('../pages/Maintenance')));

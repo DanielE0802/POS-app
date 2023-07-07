@@ -38,10 +38,10 @@ export default function AccountGeneral() {
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
-      displayName: user.displayName || '',
+      displayName: user.profile.name || '',
       email: user.email,
       photoURL: user.photoURL,
-      phoneNumber: user.phoneNumber,
+      phoneNumber: user.profile.phone,
       country: user.country,
       address: user.address,
       state: user.state,

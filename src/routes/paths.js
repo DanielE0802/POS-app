@@ -14,7 +14,8 @@ export const PATH_AUTH = {
   login: path(ROOTS_AUTH),
   register: path(ROOTS_AUTH, '/register'),
   resetPassword: path(ROOTS_AUTH, '/reset-password'),
-  verify: path(ROOTS_AUTH, '/verify')
+  verify: path(ROOTS_AUTH, '/verify'),
+  setpBySetp: path(ROOTS_AUTH, '/setp-by-setp')
 };
 
 export const PATH_PAGE = {
@@ -27,6 +28,9 @@ export const PATH_PAGE = {
 
 export const PATH_DASHBOARD = {
   root: ROOTS_DASHBOARD,
+  POS: {
+    sale: path(ROOTS_DASHBOARD, '/POS')
+  },
   general: {
     app: path(ROOTS_DASHBOARD, '/app'),
     ecommerce: path(ROOTS_DASHBOARD, '/ecommerce'),
@@ -69,8 +73,10 @@ export const PATH_DASHBOARD = {
   inventory: {
     root: path(ROOTS_DASHBOARD, '/inventory'),
     newProduct: path(ROOTS_DASHBOARD, '/inventory/product/new'),
-    list: path(ROOTS_DASHBOARD, '/inventory/list'),
-    categories: path(ROOTS_DASHBOARD, '/inventory/categories')
+    list: path(ROOTS_DASHBOARD, '/inventory/products'),
+    categories: path(ROOTS_DASHBOARD, '/inventory/categories'),
+    warehouses: path(ROOTS_DASHBOARD, '/inventory/warehouses'),
+    brands: path(ROOTS_DASHBOARD, '/inventory/brands')
   },
 
   blog: {

@@ -4,27 +4,19 @@ import { useState, useEffect, React, useCallback } from 'react';
 import { sentenceCase } from 'change-case';
 
 import plusFill from '@iconify/icons-eva/plus-fill';
-import checkmarkCircle2Fill from '@iconify/icons-eva/checkmark-circle-2-fill';
 import { Link as RouterLink } from 'react-router-dom';
 // material
 import { useTheme, styled } from '@material-ui/core/styles';
 import {
   Box,
-  Card,
-  Table,
   Button,
-  TableRow,
-  Checkbox,
-  TableBody,
-  TableCell,
   Container,
   Typography,
-  TableContainer,
-  TablePagination,
-  Stack,
   Rating,
   Pagination,
-  LinearProgress
+  TextField,
+  IconButton,
+  InputAdornment
 } from '@material-ui/core';
 import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
 import {
@@ -33,15 +25,14 @@ import {
   useGridSlotComponentProps,
   getGridNumericColumnOperators
 } from '@material-ui/data-grid';
-import mockData from '../../utils/mock-data';
-import createAvatar from '../../utils/createAvatar';
+import { Close } from '@material-ui/icons';
+import searchFill from '@iconify/icons-eva/search-fill';
 import { MIconButton, MAvatar } from '../../components/@material-extend';
 import { fPercent, fCurrency } from '../../utils/formatNumber';
 // redux
 import { useDispatch, useSelector } from '../../redux/store';
 import { getProducts, deleteProduct } from '../../redux/slices/product';
 // utils
-import { fDate } from '../../utils/formatTime';
 
 // routes
 import { PATH_DASHBOARD } from '../../routes/paths';
@@ -50,24 +41,9 @@ import useSettings from '../../hooks/useSettings';
 // components
 import Page from '../../components/Page';
 import Label from '../../components/Label';
-import Scrollbar from '../../components/Scrollbar';
-import SearchNotFound from '../../components/SearchNotFound';
 import HeaderBreadcrumbs from '../../components/HeaderBreadcrumbs';
-import {
-  ProductListHead,
-  ProductListToolbar,
-  ProductMoreMenu
-} from '../../components/_dashboard/inventory/product-list';
 
 // ----------------------------------------------------------------------
-
-// const TABLE_HEAD = [
-//   { id: 'name', label: 'Product', alignRight: false },
-//   { id: 'createdAt', label: 'Create at', alignRight: false },
-//   { id: 'inventoryType', label: 'Status', alignRight: false },
-//   { id: 'price', label: 'Price', alignRight: true, numeric: true },
-//   { id: '' }
-// ];
 
 function CustomPagination() {
   const { state, apiRef } = useGridSlotComponentProps();
@@ -125,63 +101,13 @@ const ThumbImgStyle = styled('img')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-// function descendingComparator(a, b, orderBy) {
-//   if (b[orderBy] < a[orderBy]) {
-//     return -1;
-//   }
-//   if (b[orderBy] > a[orderBy]) {
-//     return 1;
-//   }
-//   return 0;
-// }
-
-// function getComparator(order, orderBy) {
-//   return order === 'desc'
-//     ? (a, b) => descendingComparator(a, b, orderBy)
-//     : (a, b) => -descendingComparator(a, b, orderBy);
-// }
-
-// function applySortFilter(array, comparator, query) {
-//   const stabilizedThis = array.map((el, index) => [el, index]);
-//   stabilizedThis.sort((a, b) => {
-//     const order = comparator(a[0], b[0]);
-//     if (order !== 0) return order;
-//     return a[1] - b[1];
-//   });
-
-//   if (query) {
-//     return filter(array, (_product) => _product.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-//   }
-
-//   return stabilizedThis.map((el) => el[0]);
-// }
-
-// ----------------------------------------------------------------------
-
 const columns = [
-  // OPTIONS
-  // https://material-ui.com/api/data-grid/grid-col-def/#main-content
-  // - hide: false (default)
-  // - editable: false (default)
-  // - filterable: true (default)
-  // - sortable: true (default)
-  // - disableColumnMenu: false (default)
-
-  // FIELD TYPES
-  // --------------------
-  // 'string' (default)
-  // 'number'
-  // 'date'
-  // 'dateTime'
-  // 'boolean'
-  // 'singleSelect'
-
   {
     field: 'id',
     hide: true
   },
   {
-    field: 'img',
+    field: 'images',
     headerName: 'Imagen',
     width: 100,
     sortable: false,
@@ -189,9 +115,8 @@ const columns = [
     disableColumnMenu: true,
     align: 'center',
     renderCell: (params) => {
-      const imgUrl =
-        'https://copservir.vtexassets.com/arquivos/ids/784090/GASEOSA-COCA-COLA-ORIGINAL_F.png?v=637964068701300000';
-      return <ThumbImgStyle variant="square" alt={params.row.name} src={imgUrl} sx={{ width: 74, height: 74 }} />;
+      const imgUrl = params.getValue(params.id, 'images');
+      return <ThumbImgStyle variant="square" alt={params.row.name} src={imgUrl[0]} sx={{ width: 74, height: 74 }} />;
     }
   },
   {
@@ -199,8 +124,7 @@ const columns = [
     headerName: 'Nombre',
     maxWidth: 200,
     minWidth: 150,
-    flex: 1.5,
-    resizable: true
+    flex: 1.5
   },
   {
     field: 'priceSale',
@@ -209,7 +133,6 @@ const columns = [
     minWidth: 140,
     flex: 1,
     renderCell: (params) => {
-      // TODO: falta que retorne el price normal
       // TODO: que muestre el precio de venta formateado segun la moneda
       const priceSale = params.getValue(params.id, 'priceSale');
       return (
@@ -321,14 +244,19 @@ export default function InventoryProductList() {
   // const [page, setPage] = useState(0);
   // const [order, setOrder] = useState('asc');
   // const [selected, setSelected] = useState([]);
-  // const [filterName, setFilterName] = useState('');
+  const [filterName, setFilterName] = useState('');
   // const [rowsPerPage, setRowsPerPage] = useState(5);
   // const [orderBy, setOrderBy] = useState('createdAt');
   const { products } = useSelector((state) => state.product);
+  const [filterProducts, setFilterProducts] = useState([]);
 
   useEffect(() => {
     dispatch(getProducts());
   }, [dispatch]);
+
+  useEffect(() => {
+    setFilterProducts(products);
+  }, [products]);
 
   if (columns.length > 0) {
     const ratingColumn = columns.find((column) => column.field === 'rating');
@@ -344,6 +272,20 @@ export default function InventoryProductList() {
       filterOperators: ratingFilterOperators
     };
   }
+
+  const handleSearch = (value) => {
+    setFilterName(value);
+    console.log(products);
+    const productSearch = filter(
+      products,
+      (product) =>
+        product.name.toLowerCase().includes(value.toLowerCase()) ||
+        product.sku.toLowerCase().includes(value.toLowerCase()) ||
+        product.description.toLowerCase().includes(value.toLowerCase())
+    );
+    console.log(productSearch);
+    setFilterProducts(productSearch);
+  };
 
   return (
     <Page title="Inventario: Productos">
@@ -369,13 +311,44 @@ export default function InventoryProductList() {
             </Button>
           }
         />
+        <TextField
+          fullWidth
+          label="Buscar producto"
+          onChange={(e) => handleSearch(e.target.value)}
+          value={filterName}
+          // placeholder="Buscar producto por nombre, sku o descripción"
+          sx={{ mb: 3 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                {filterName !== '' && (
+                  <IconButton
+                    onClick={() => {
+                      setFilterName('');
+                      setFilterProducts(products);
+                    }}
+                  >
+                    <Close />
+                  </IconButton>
+                )}
+              </InputAdornment>
+            )
+          }}
+        />
+
         <DataGrid
           checkboxSelection
           disableSelectionOnClick
           autoHeight
-          rows={products}
+          rows={filterProducts}
           columns={columns}
           pagination
+          loading={products.length === 0}
           pageSize={10}
           rowHeight={90}
           components={{

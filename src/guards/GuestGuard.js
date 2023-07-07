@@ -12,10 +12,14 @@ GuestGuard.propTypes = {
 };
 
 export default function GuestGuard({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isFirstLogin } = useAuth();
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !isFirstLogin) {
     return <Navigate to={PATH_DASHBOARD.root} />;
+  }
+
+  if (isAuthenticated && isFirstLogin) {
+    return <Navigate to="/StepByStep" />;
   }
 
   return <>{children}</>;

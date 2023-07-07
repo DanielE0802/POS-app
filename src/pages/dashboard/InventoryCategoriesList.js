@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react';
-import { useState, useEffect, React, useRef } from 'react';
+import { useState, useEffect, React, useRef, Fragment } from 'react';
 import { sentenceCase } from 'change-case';
 
 import plusFill from '@iconify/icons-eva/plus-fill';
@@ -16,15 +16,13 @@ import {
   Pagination,
   Grid,
   Skeleton,
-  CardContent
+  CardContent,
+  Divider,
+  ListItem,
+  IconButton
 } from '@material-ui/core';
 import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
-import {
-  DataGrid,
-  GridToolbar,
-  useGridSlotComponentProps,
-  getGridNumericColumnOperators
-} from '@material-ui/data-grid';
+import { DataGrid, GridToolbar, useGridSlotComponentProps } from '@material-ui/data-grid';
 
 import { makeStyles } from '@material-ui/styles';
 
@@ -35,8 +33,10 @@ import ListItemText from '@mui/material/ListItemText';
 import Collapse from '@mui/material/Collapse';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 
+import { connect } from 'react-redux';
+import PopupCreateCategory from '../../components/_dashboard/inventory/product-list/categories/PopupCreateCategory';
 import MenuCategories from '../../components/_dashboard/inventory/product-list/categories/MenuCategories';
-import { getCategories, getProductsInCategory } from '../../redux/slices/categories';
+import { getCategories, getProductsInCategory, switchPopupState } from '../../redux/slices/categories';
 import { useDispatch, useSelector } from '../../redux/store';
 import { fCurrency } from '../../utils/formatNumber';
 import { MIconButton } from '../../components/@material-extend';
@@ -213,44 +213,55 @@ export default function InvetoryCategoriesList() {
   const { themeStretch } = useSettings();
   // const theme = useTheme();
   const dispatch = useDispatch();
-  const { categories } = useSelector((state) => state.categories);
+  const { categories, openPopup } = useSelector((state) => state.categories);
+
+  // Get categories and get products in category from API
   useEffect(() => {
     dispatch(getCategories());
   }, [dispatch]);
 
-  if (columns.length > 0) {
-    const ratingColumn = columns.find((column) => column.field === 'rating');
-    const ratingColIndex = columns.findIndex((col) => col.field === 'rating');
-
-    const ratingFilterOperators = getGridNumericColumnOperators().map((operator) => ({
-      ...operator,
-      InputComponent: RatingInputValue
-    }));
-
-    columns[ratingColIndex] = {
-      ...ratingColumn,
-      filterOperators: ratingFilterOperators
-    };
-  }
-
-  const [open, setOpen] = useState(true);
-
-  const handleClick = () => {
-    setOpen(!open);
-  };
-
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const handleListItemClick = (event, index) => {
-    setSelectedIndex(index);
-  };
-
-  const { products } = useSelector((state) => state.categories);
-
   useEffect(() => {
     dispatch(getProductsInCategory());
   }, [dispatch]);
+
+  const [expandedCategories, setExpandedCategories] = useState([]);
+
+  // states for menu options in categories
+  const [viewCategory, setViewCategory] = useState(0);
+  const [editCategory, setEditCategory] = useState(0);
+  const [deleteCategory, setDeleteCategory] = useState(0);
+
+  // Popup create category
+  // const [openPopup, setOpenPopup] = useState(false);
+
+  const { products } = useSelector((state) => state.categories);
+
   const menuRef = useRef(null);
+
+  const handleEdit = (id) => {
+    console.log(`edit${id}`);
+  };
+
+  const handleDelete = (id) => {
+    console.log(`delete${id}`);
+  };
+
+  const handleClick = (categoryId) => {
+    const isExpanded = expandedCategories.includes(categoryId);
+    if (isExpanded) {
+      setExpandedCategories(expandedCategories.filter((id) => id !== categoryId));
+    } else {
+      setExpandedCategories([...expandedCategories, categoryId]);
+    }
+  };
+
+  const handleView = (categoryId) => {
+    setViewCategory(categoryId);
+  };
+
+  const handleClickPopup = () => {
+    dispatch(switchPopupState());
+  };
 
   const classes = useStyles();
   return (
@@ -267,12 +278,7 @@ export default function InvetoryCategoriesList() {
             { name: 'Categorias' }
           ]}
           action={
-            <Button
-              variant="contained"
-              component={RouterLink}
-              to={PATH_DASHBOARD.inventory.newProduct}
-              startIcon={<Icon icon={plusFill} />}
-            >
+            <Button variant="contained" onClick={handleClickPopup} startIcon={<Icon icon={plusFill} />}>
               Crear categoria
             </Button>
           }
@@ -285,22 +291,61 @@ export default function InvetoryCategoriesList() {
               ) : (
                 <List sx={{ width: '100%', bgcolor: 'background.paper' }} component="nav">
                   {categories.map((category) => (
-                    <ListItemButton onClick={() => setSelectedIndex(category.id)} ref={menuRef} key={category.id}>
-                      <ListItemText primary={category.name} />
-                      <MenuCategories />
-                    </ListItemButton>
+                    <Fragment key={category.id}>
+                      <ListItem
+                        disablePadding
+                        secondaryAction={
+                          <>
+                            {category.subcategories.length > 0 ? (
+                              expandedCategories.includes(category.id) ? (
+                                <IconButton onClick={() => handleClick(category.id)}>
+                                  <ExpandLess />
+                                </IconButton>
+                              ) : (
+                                <IconButton onClick={() => handleClick(category.id)}>
+                                  <ExpandMore />
+                                </IconButton>
+                              )
+                            ) : null}
+                            <MenuCategories
+                              handleEdit={handleEdit}
+                              handleView={handleView}
+                              handleDelete={handleDelete}
+                            />
+                          </>
+                        }
+                      >
+                        <ListItemButton
+                          sx={{ padding: 1.5, paddingLeft: 2 }}
+                          onClick={() => handleView(category.id)}
+                          ref={menuRef}
+                        >
+                          <ListItemText primary={category.name} />
+                        </ListItemButton>
+                      </ListItem>
+
+                      {category.subcategories.length > 0 && (
+                        <Collapse
+                          key={`collapse-${category.id}`}
+                          in={expandedCategories.includes(category.id)}
+                          timeout="auto"
+                          unmountOnExit
+                        >
+                          <List component="div" disablePadding>
+                            {category.subcategories.map((subcategory) => (
+                              <ListItemButton
+                                onClick={() => handleView(subcategory.id)}
+                                sx={{ pl: 4 }}
+                                key={subcategory.id}
+                              >
+                                <ListItemText primary={subcategory.name} />
+                              </ListItemButton>
+                            ))}
+                          </List>
+                        </Collapse>
+                      )}
+                    </Fragment>
                   ))}
-                  <ListItemButton onClick={handleClick}>
-                    <ListItemText primary="categoria" />
-                    {open ? <ExpandLess /> : <ExpandMore />}
-                  </ListItemButton>
-                  <Collapse in={open} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding>
-                      <ListItemButton sx={{ pl: 4 }}>
-                        <ListItemText primary="subcategoria" />
-                      </ListItemButton>
-                    </List>
-                  </Collapse>
                 </List>
               )}
             </Card>
@@ -308,27 +353,65 @@ export default function InvetoryCategoriesList() {
           <Grid item xs={12} md={8}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
-                {selectedIndex === 0 && 'seleciona una categoria'}
-                <DataGrid
-                  checkboxSelection
-                  disableSelectionOnClick
-                  autoHeight
-                  rows={products}
-                  columns={columns}
-                  pagination
-                  pageSize={10}
-                  rowHeight={60}
-                  loading={products.length === 0}
-                  components={{
-                    Toolbar: GridToolbar,
-                    Pagination: CustomPagination
-                  }}
-                />
+                {viewCategory === 0 ? (
+                  'seleciona una categoria'
+                ) : (
+                  <>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={6}>
+                        <Typography variant="h5" sx={{ mb: 3 }}>
+                          {categories.find((category) => category.id === viewCategory).name}
+                        </Typography>
+                        <Typography variant="body2" sx={{ mb: 1 }}>
+                          {/* TODO: se estan utilizando en las subcategorias el mismo id y necesito agregarle la categoria padre */}
+                          {categories.find((category) => category.id === viewCategory).subcategories.length > 0 ? (
+                            <strong>Categoria padre:</strong>
+                          ) : (
+                            console.log(
+                              categories.findIndex((category) => category.subcategories.id === viewCategory.id)
+                            )
+                          )}
+                        </Typography>
+                        <Typography variant="body2" sx={{ mb: 3 }}>
+                          {/* Description for category */}
+                          {categories.find((category) => category.id === viewCategory).description}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <img
+                          src="https://cdn.shopify.com/s/files/1/0604/8373/1606/products/IMG-5578993_823x.jpg?v=1661609505"
+                          loading="lazy"
+                          alt="imagen"
+                        />
+                      </Grid>
+                    </Grid>
+                    <Divider sx={{ mb: 3 }} />
+                    <Typography variant="h6" sx={{ mb: 3 }}>
+                      Productos asociados
+                    </Typography>
+                    <DataGrid
+                      checkboxSelection
+                      disableSelectionOnClick
+                      autoHeight
+                      rows={categories.find((category) => category.id === viewCategory).products}
+                      columns={columns}
+                      pagination
+                      pageSize={10}
+                      rowHeight={60}
+                      loading={products.length === 0}
+                      components={{
+                        Toolbar: GridToolbar,
+                        Pagination: CustomPagination
+                      }}
+                    />
+                  </>
+                )}
               </CardContent>
             </Card>
           </Grid>
         </Grid>
       </Container>
+      <PopupCreateCategory open={openPopup} handleClose={handleClickPopup} />
     </Page>
   );
 }

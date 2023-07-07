@@ -2,6 +2,7 @@ import { combineReducers } from 'redux';
 import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 // slices
+import warehousesReducer from './slices/warehouses';
 import mailReducer from './slices/mail';
 import chatReducer from './slices/chat';
 import blogReducer from './slices/blog';
@@ -10,6 +11,7 @@ import productReducer from './slices/product';
 import calendarReducer from './slices/calendar';
 import kanbanReducer from './slices/kanban';
 import categoriesReducer from './slices/categories';
+import brandsReducer from './slices/brands';
 
 // ----------------------------------------------------------------------
 
@@ -35,7 +37,9 @@ const rootReducer = combineReducers({
   calendar: calendarReducer,
   kanban: kanbanReducer,
   product: persistReducer(productPersistConfig, productReducer),
-  categories: categoriesReducer
+  categories: categoriesReducer,
+  warehouses: warehousesReducer,
+  brands: brandsReducer
 });
 
 export { rootPersistConfig, rootReducer };

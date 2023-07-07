@@ -109,7 +109,7 @@ export default function UploadMultiFile({ error, showPreview = false, files, onR
 
         <Box sx={{ p: 3, ml: { md: 2 } }}>
           <Typography gutterBottom variant="h5">
-            Drop or Select file
+            Suelta tus imagenes aquí o haz click
           </Typography>
 
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>

@@ -6,7 +6,6 @@ import axios from '../api/axios';
 // ----------------------------------------------------------------------
 
 const isValidToken = (accessToken) => {
-  console.log(`is valid token${accessToken}`);
   if (!accessToken) {
     return false;
   }
@@ -31,8 +30,6 @@ const isValidToken = (accessToken) => {
 // };
 
 const setSession = (accessToken) => {
-  console.log('set session');
-  console.log(accessToken);
   if (accessToken) {
     localStorage.setItem('accessToken', accessToken);
     axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;

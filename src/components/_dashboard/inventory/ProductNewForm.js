@@ -2,8 +2,7 @@ import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import { useSnackbar } from 'notistack5';
 import { useNavigate } from 'react-router-dom';
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { NumericFormat } from 'react-number-format';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Form, FormikProvider, useFormik } from 'formik';
 // material
 import { styled } from '@material-ui/core/styles';
@@ -11,7 +10,7 @@ import { LoadingButton } from '@material-ui/lab';
 import {
   Divider,
   Card,
-  Chip,
+  IconButton,
   Grid,
   Stack,
   Radio,
@@ -26,48 +25,55 @@ import {
   InputAdornment,
   FormHelperText,
   FormControlLabel,
-  MenuItem
+  MenuItem,
+  Tooltip,
+  List,
+  ListItem,
+  ListItemAvatar,
+  Avatar,
+  ListItemText,
+  Link,
+  Box
 } from '@material-ui/core';
+import Zoom from '@mui/material/Zoom';
+
 // utils
 import Quagga from 'quagga';
 import Webcam from 'react-webcam';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import { Icon } from '@iconify/react';
+import match from 'autosuggest-highlight/match';
+import parse from 'autosuggest-highlight/parse';
+import searchFill from '@iconify/icons-eva/search-fill';
+import PopupCreateBrand from './product-list/brands/PopupCreateBrand';
+import { getBrands } from '../../../redux/slices/brands';
+import { ButtonAutocomplete } from './common/ButtonAutocomplete';
+import MenuCategories from './product-list/categories/MenuCategories';
+import PopupAssingInventory from './PopupAssignInventory';
+import CustomTooltip from './common/CustomTooltip';
 import { NumericFormatCustom } from './NumericFormatCustom';
 import PopupAddVariantes from './PopupAddVariantes';
-import fakeRequest from '../../../utils/fakeRequest';
 // routes
 import { PATH_DASHBOARD } from '../../../routes/paths';
 //
 import { QuillEditor } from '../../editor';
-import { UploadMultiFile } from '../../upload';
+import { UploadMultiFile, UploadSingleFile } from '../../upload';
+import RequestService from '../../../api/services/service';
+import { useDispatch, useSelector } from '../../../redux/store';
+import { getCategories } from '../../../redux/slices/categories';
+import PopupCreateCategory from './product-list/categories/PopupCreateCategory';
+import { getWarehouses } from '../../../redux/slices/warehouses';
+
+// Functions
+
+import { calculatePriceBase, calculatePriceSale } from './product-list/calculatePriceFunctions/priceFunctions';
+// import calculatePriceSale from './product-list/calculatePriceFunctions/priceFunctions';
 
 // ----------------------------------------------------------------------
-
-const GENDER_OPTION = ['Men', 'Women', 'Kids'];
-
-const CATEGORY_OPTION = [
-  { group: 'Clothing', classify: ['Shirts', 'T-shirts', 'Jeans', 'Leather'] },
-  { group: 'Tailored', classify: ['Suits', 'Blazers', 'Trousers', 'Waistcoats'] },
-  { group: 'Accessories', classify: ['Shoes', 'Backpacks and bags', 'Bracelets', 'Face masks'] }
-];
-
-const TAXES_OPTIONS = [{ name: 'Ninguno (0%)' }, { name: 'IVA - (19.00%)' }, { name: 'Transporte - (10.00%)' }];
-
-const TAGS_OPTION = [
-  'Toy Story 3',
-  'Logan',
-  'Full Metal Jacket',
-  'Dangal',
-  'The Sting',
-  '2001: A Space Odyssey',
-  "Singin' in the Rain",
-  'Toy Story',
-  'Bicycle Thieves',
-  'The Kid',
-  'Inglourious Basterds',
-  'Snatch',
-  '3 Idiots'
+const TAXES_OPTIONS = [
+  { name: 'Ninguno (0%)', percentage: 0 },
+  { name: 'IVA - (19.00%)', percentage: 19 },
+  { name: 'Transporte - (10.00%)', percentage: 10 }
 ];
 const LabelStyle = styled(Typography)(({ theme }) => ({
   ...theme.typography.subtitle2,
@@ -87,10 +93,21 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
   const { enqueueSnackbar } = useSnackbar();
 
   const NewProductSchema = Yup.object().shape({
-    name: Yup.string().required('Name is required'),
-    description: Yup.string().required('Description is required'),
-    images: Yup.array().min(1, 'Images is required'),
-    price: Yup.number().required('Price is required')
+    name: Yup.string().required('Nombre es requerido'),
+    description: Yup.string().optional(),
+    typeProduct: Yup.string().optional(),
+    images: Yup.array().optional(),
+    priceBase: Yup.number().required('Precio base es requerido'),
+    priceSale: Yup.number().required('Precio de venta es requerido'),
+    taxesOption: Yup.string().required('Impuesto es requerido'),
+    state: Yup.bool().required('Estado es requerido'),
+    sku: Yup.string().optional(),
+    barCode: Yup.string().required('Código de barras es requerido'),
+    wareHouse: Yup.array().required('Punto de venta es requerido'),
+    category: Yup.string().required('Categoria es requerido'),
+    brand: Yup.string().required('Marca es requerido'),
+    quantityStock: Yup.number().required('Cantidad en stock es requerido'),
+    sellInNegative: Yup.bool().optional()
   });
 
   const formik = useFormik({
@@ -98,26 +115,51 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     initialValues: {
       name: currentProduct?.name || '',
       description: currentProduct?.description || '',
-      images: currentProduct?.images || [],
-      code: currentProduct?.code || '',
+      images: 'https://i.linio.com/p/5b14b66fe177776b12c42b86805c4ce0-product.webp',
+      barCode: currentProduct?.barCode || '',
       sku: currentProduct?.sku || '',
-      price: currentProduct?.price || '',
+      typeProduct: currentProduct?.typeProduct || 'simple',
+      priceBase: currentProduct?.priceBase || '',
       priceSale: currentProduct?.priceSale || '',
-      tags: currentProduct?.tags || [TAGS_OPTION[0]],
-      inStock: Boolean(currentProduct?.inventoryType !== 'out_of_stock'),
-      taxes: true,
-      gender: currentProduct?.gender || GENDER_OPTION[2],
-      category: currentProduct?.category || CATEGORY_OPTION[0].name,
-      taxesOption: currentProduct?.taxesOption || TAXES_OPTIONS[0].name
+      state: currentProduct?.state || true,
+      sellInNegative: currentProduct?.sellInNegative || false,
+      // category: currentProduct?.category || CATEGORY_OPTION[0].name,
+      taxesOption: currentProduct?.taxesOption || 0,
+      wareHouse: currentProduct?.wareHouse || [{ name: '', id: 0, quantity: 0, minQuantity: 0 }],
+      category: currentProduct?.category || '',
+      quantityStock: currentProduct?.quantityStock || 0,
+      brand: currentProduct?.brand || ''
     },
     validationSchema: NewProductSchema,
+    // validate: (values) => {
+    //   console.log(values);
+    // },
+
     onSubmit: async (values, { setSubmitting, resetForm, setErrors }) => {
       try {
-        await fakeRequest(500);
+        const data = {
+          name: values.name,
+          description: values.description,
+          images: values.images,
+          barCode: values.barCode,
+          sku: values.sku,
+          typeProduct: values.typeProduct,
+          priceBase: values.priceBase,
+          priceSale: values.priceSale,
+          state: values.state,
+          sellInNegative: values.sellInNegative,
+          category: { id: values.category },
+          taxesOption: values.taxesOption,
+          productPdv: values.wareHouse,
+          quantityStock: values.wareHouse.reduce((acc, item) => acc + item.quantity, 0),
+          brand: { id: values.brand }
+        };
+        await RequestService.createProduct(data);
+        // En el body que se envia cambiar el wareHouse por productPdv
         resetForm();
         setSubmitting(false);
         enqueueSnackbar(!isEdit ? 'Create success' : 'Update success', { variant: 'success' });
-        navigate(PATH_DASHBOARD.eCommerce.list);
+        navigate(PATH_DASHBOARD.inventory.list);
       } catch (error) {
         console.error(error);
         setSubmitting(false);
@@ -126,7 +168,7 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     }
   });
 
-  const { errors, values, touched, handleSubmit, isSubmitting, setFieldValue, getFieldProps } = formik;
+  const { errors, values, touched, handleSubmit, setFieldTouched, isSubmitting, setFieldValue, getFieldProps } = formik;
 
   const handleDrop = useCallback(
     (acceptedFiles) => {
@@ -142,6 +184,19 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     [setFieldValue]
   );
 
+  const handleDropSingleFile = useCallback(
+    (acceptedFiles) => {
+      const file = acceptedFiles[0];
+      if (file) {
+        setFieldValue('images', {
+          ...file,
+          preview: URL.createObjectURL(file)
+        });
+      }
+    },
+    [setFieldValue]
+  );
+
   const handleRemoveAll = () => {
     setFieldValue('images', []);
   };
@@ -151,13 +206,9 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
     setFieldValue('images', filteredItems);
   };
 
-  const handlePriceTaxes = (event) => {
-    console.log('Hola');
-    const prueba = getFieldProps('taxesOption');
-    console.log(event.target.value);
-    console.log(values.taxesOption);
-    console.log(prueba);
-  };
+  const { warehouses } = useSelector((state) => state.warehouses);
+  const { categories } = useSelector((state) => state.categories);
+  const { brands } = useSelector((state) => state.brands);
 
   // const webcamRef = useRef(null);
 
@@ -200,18 +251,184 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
   // }, []);
 
   // Change product type
-  const [productType, setProductType] = useState('simple'); // State variable to track the product type
+  const [productType, setProductType] = useState('simple');
 
-  const handleProductTypeChange = (event) => {
-    setProductType(event.target.value);
+  const handleProductTypeChange = (event, state) => {
+    setProductType(state);
+    setFieldValue('typeProduct', state);
   };
+
+  useEffect(() => {
+    const taxPercentage = values.taxesOption;
+    const newPriceSale = calculatePriceSale(values.priceBase, taxPercentage);
+    setFieldValue('priceSale', newPriceSale);
+    setFieldTouched('priceSale', true);
+  }, [values.taxesOption, setFieldValue, setFieldTouched, values.priceBase]);
+
+  // Popup to assign inventory
+  const handleAssignInventory = (wareHouse, quantity, minQuantity, edit) => {
+    if (edit) {
+      handleEditInventory(wareHouse, quantity, minQuantity);
+      handleClosePopupWarehouse();
+
+      return true;
+    }
+    if (values.wareHouse.some((item) => item.id === wareHouse.id)) {
+      enqueueSnackbar(`El punto de venta ${wareHouse.name} ya esta seleccionada, asignale una cantidad editandola.`, {
+        variant: 'warning'
+      });
+      return false;
+    }
+    setFieldValue('wareHouse', [
+      ...values.wareHouse,
+      {
+        name: wareHouse.name,
+        id: wareHouse.id,
+        quantity,
+        minQuantity
+      }
+    ]);
+    enqueueSnackbar(`El punto de venta ${wareHouse.name} fue asignado correctamente.`, {
+      variant: 'success'
+    });
+    handleClosePopupWarehouse();
+    return true;
+  };
+
+  const [warehouseEdit, setWarehouseEdit] = useState(null);
+
+  const handleEditInventory = (wareHouse, quantity, minQuantity) => {
+    const newWareHouse = values.wareHouse.map((item) => {
+      if (item.id === wareHouse.id) {
+        return {
+          ...item,
+          quantity,
+          minQuantity
+        };
+      }
+      if (item.id === warehouseEdit.id) {
+        return {
+          name: wareHouse.name,
+          id: wareHouse.id,
+          quantity,
+          minQuantity
+        };
+      }
+      return item;
+    });
+    setFieldValue('wareHouse', newWareHouse);
+    setWarehouseEdit(null);
+  };
+
+  const setEditWareHouse = (warehouse) => {
+    handleClickOpenPopupWarehouse();
+    setWarehouseEdit(warehouse);
+  };
+
+  const deleteWareHouse = (warehouse) => {
+    const newWareHouse = values.wareHouse.filter((item) => item.id !== warehouse.id);
+    setFieldValue('wareHouse', newWareHouse);
+  };
+
+  const [openPopupWarehouse, setOpenPopupWarehouse] = useState(false);
+
+  const setAssignWarehouse = () => {
+    setEditWareHouse(null);
+    handleClickOpenPopupWarehouse();
+  };
+
+  const handleClickOpenPopupWarehouse = () => {
+    setOpenPopupWarehouse(true);
+  };
+
+  const handleClosePopupWarehouse = () => {
+    setOpenPopupWarehouse(false);
+  };
+
+  // control category
+  const dispatch = useDispatch();
+
+  // Get categories and get products in category from API
+  useEffect(() => {
+    dispatch(getCategories());
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(getBrands());
+  }, [dispatch]);
+
+  const [searchQueryCategory, setSearchQueryCategory] = React.useState('');
+
+  //   data
+  const [selectedOptionCategory, setSelectedOptionCategory] = React.useState(''); // Nuevo estado para almacenar la opción seleccionada
+
+  const handleCategorySelect = (event, option) => {
+    setSelectedOptionCategory(option); // Actualizar el estado con la opción seleccionada
+    setFieldValue('category', option?.id); // Actualizar el valor del campo category en Formik
+  };
+  const handleInputCategoryChange = (event, value) => {
+    setSearchQueryCategory(value);
+  };
+
+  const isOptionEqualToValue = (option, value) => {
+    if (option && value) {
+      return option.id === value.id && option.name === value.name;
+    }
+    return false;
+  };
+
+  const [openPopupCategory, setOpenPopupCategory] = useState(false);
+
+  const handleCloseCreateCategory = () => {
+    setOpenPopupCategory(false);
+  };
+
+  const handleClickOpenPopupCategory = () => {
+    setOpenPopupCategory(true);
+  };
+
+  // Brands
+
+  const [searchQueryBrand, setSearchQueryBrand] = React.useState('');
+  const [selectedOptionBrand, setSelectedOptionBrand] = React.useState(''); // Nuevo estado para almacenar la opción seleccionada
+
+  const handleBrandSelect = (event, option) => {
+    setSelectedOptionBrand(option); // Actualizar el estado con la opción seleccionada
+    setFieldValue('brand', option?.id); // Actualizar el valor del campo category en Formik
+  };
+
+  const handleInputBrandChange = (event, value) => {
+    setSearchQueryBrand(value);
+  };
+
+  const [openPopupBrand, setOpenPopupBrand] = useState(false);
+
+  const handleCloseCreateBrand = () => {
+    setOpenPopupBrand(false);
+  };
+
+  const handleClickOpenPopupBrand = () => {
+    setOpenPopupBrand(true);
+  };
+
+  useEffect(() => {
+    dispatch(getWarehouses());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (warehouses.length > 0) {
+      const fieldwarehouse = [warehouses[0]];
+      setFieldValue('wareHouse', fieldwarehouse);
+    }
+  }, [warehouses, setFieldValue]);
 
   return (
     <FormikProvider value={formik}>
       <Form noValidate autoComplete="off" onSubmit={handleSubmit}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={8}>
-            <Card sx={{ p: 3 }}>
+            {/* Información general del producto */}
+            <Card sx={{ p: 3, overflow: 'visible', zIndex: 99 }}>
               <Typography variant="h4">Información general</Typography>
               <Divider sx={{ mb: 3, mt: 0.5 }} />
               <Stack spacing={3}>
@@ -236,11 +453,207 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                   error={Boolean(touched.name && errors.name)}
                   helperText={touched.name && errors.name}
                 />
+                <Stack flexDirection="row" gap={2}>
+                  <TextField
+                    fullWidth
+                    label="Codigo de barras"
+                    {...getFieldProps('barCode')}
+                    // Insertar icono de escaner de código de barras
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <Tooltip title="Escanear código de barras" TransitionComponent={Zoom} arrow>
+                            <IconButton
+                              onClick={() => {
+                                console.log('Hola');
+                              }}
+                            >
+                              <Icon icon="carbon:scan" width={30} height={30} />
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="SKU"
+                    {...getFieldProps('sku')}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <CustomTooltip
+                            title="(opcional) es el código interno que cada negocio crea por sí mismo para sus productos"
+                            TransitionComponent={Zoom}
+                            arrow
+                          >
+                            <Icon icon="carbon:scan" width={30} height={30} />
+                          </CustomTooltip>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                </Stack>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                  {/* Categorias */}
+                  <Autocomplete
+                    fullWidth
+                    value={selectedOptionCategory}
+                    getOptionLabel={(option) => (option.name ? option.name : '')}
+                    options={categories}
+                    inputValue={searchQueryCategory}
+                    onInputChange={handleInputCategoryChange}
+                    onChange={handleCategorySelect}
+                    isOptionEqualToValue={isOptionEqualToValue}
+                    loading={categories.length === 0}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        placeholder="Categoria"
+                        InputProps={{
+                          ...params.InputProps,
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Box
+                                component={Icon}
+                                icon={searchFill}
+                                sx={{
+                                  ml: 1,
+                                  width: 20,
+                                  height: 20,
+                                  color: 'text.disabled'
+                                }}
+                              />
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    )}
+                    renderOption={(props, option) => {
+                      const matches = match(option.name, searchQueryCategory);
+                      const parts = parse(option.name, matches);
+
+                      return (
+                        <>
+                          <li {...props}>
+                            <Link onClick={() => handleCategorySelect(option)} to="#" underline="none">
+                              <Box sx={{ typography: 'body2', display: 'flex', alignItems: 'center' }}>
+                                <Typography variant="body2" color="text.primary">
+                                  {parts.map((part, index) => (
+                                    <span
+                                      key={index}
+                                      style={{
+                                        fontWeight: part.highlight ? 700 : 400
+                                      }}
+                                    >
+                                      {part.text}
+                                    </span>
+                                  ))}
+                                </Typography>
+                              </Box>
+                            </Link>
+                          </li>
+                        </>
+                      );
+                    }}
+                    noOptionsText={
+                      <>
+                        <Typography variant="body2" color="text.secondary" sx={{ py: 2, px: 1 }}>
+                          No se encontraron resultados a la búsqueda "{searchQueryCategory}"
+                        </Typography>
+                      </>
+                    }
+                    PaperComponent={({ children }) =>
+                      ButtonAutocomplete({
+                        title: 'Crear categoria',
+                        handleOnClick: handleClickOpenPopupCategory,
+                        children
+                      })
+                    }
+                  />
+                  {/* Brands */}
+                  <Autocomplete
+                    fullWidth
+                    value={selectedOptionBrand}
+                    getOptionLabel={(option) => (option.name ? option.name : '')}
+                    options={brands}
+                    inputValue={searchQueryBrand}
+                    onInputChange={handleInputBrandChange}
+                    onChange={handleBrandSelect}
+                    isOptionEqualToValue={isOptionEqualToValue}
+                    loading={brands.length === 0}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        placeholder="Marca"
+                        InputProps={{
+                          ...params.InputProps,
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Box
+                                component={Icon}
+                                icon={searchFill}
+                                sx={{
+                                  ml: 1,
+                                  width: 20,
+                                  height: 20,
+                                  color: 'text.disabled'
+                                }}
+                              />
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+                    )}
+                    renderOption={(props, option) => {
+                      const matches = match(option.name, searchQueryBrand);
+                      const parts = parse(option.name, matches);
+
+                      return (
+                        <>
+                          <li {...props}>
+                            <Link onClick={() => handleBrandSelect(option)} to="#" underline="none">
+                              <Box sx={{ typography: 'body2', display: 'flex', alignItems: 'center' }}>
+                                <Typography variant="body2" color="text.primary">
+                                  {parts.map((part, index) => (
+                                    <span
+                                      key={index}
+                                      style={{
+                                        fontWeight: part.highlight ? 700 : 400
+                                      }}
+                                    >
+                                      {part.text}
+                                    </span>
+                                  ))}
+                                </Typography>
+                              </Box>
+                            </Link>
+                          </li>
+                        </>
+                      );
+                    }}
+                    noOptionsText={
+                      <>
+                        <Typography variant="body2" color="text.secondary" sx={{ py: 2, px: 1 }}>
+                          No se encontraron resultados a la búsqueda "{searchQueryBrand}"
+                        </Typography>
+                      </>
+                    }
+                    PaperComponent={({ children }) =>
+                      ButtonAutocomplete({
+                        title: 'Crear marca',
+                        handleOnClick: handleClickOpenPopupBrand,
+                        children
+                      })
+                    }
+                  />
+                </Stack>
 
                 <Stack>
                   <LabelStyle>Descripción</LabelStyle>
                   <QuillEditor
                     simple
+                    placeholder="Escribe una descripción..."
                     id="product-description"
                     value={values.description}
                     onChange={(val) => setFieldValue('description', val)}
@@ -249,24 +662,6 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                   {touched.description && errors.description && (
                     <FormHelperText error sx={{ px: 2 }}>
                       {touched.description && errors.description}
-                    </FormHelperText>
-                  )}
-                </Stack>
-                <Stack>
-                  <LabelStyle>Add Images</LabelStyle>
-                  <UploadMultiFile
-                    showPreview
-                    maxSize={3145728}
-                    accept="image/*"
-                    files={values.images}
-                    onDrop={handleDrop}
-                    onRemove={handleRemove}
-                    onRemoveAll={handleRemoveAll}
-                    error={Boolean(touched.images && errors.images)}
-                  />
-                  {touched.images && errors.images && (
-                    <FormHelperText error sx={{ px: 2 }}>
-                      {touched.images && errors.images}
                     </FormHelperText>
                   )}
                 </Stack>
@@ -285,6 +680,8 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                 <PopupAddVariantes />
               </Card>
             )}
+
+            {/* Precio base, impuesto y precio de venta del producto */}
             <Card sx={{ p: 3, mt: 5 }}>
               <Typography variant="h4">Precio</Typography>
               <Divider sx={{ mb: 3, mt: 0.5 }} />
@@ -296,114 +693,166 @@ export default function ProductNewForm({ isEdit, currentProduct }) {
                   <TextField
                     fullWidth
                     label="Precio base"
-                    {...getFieldProps('price')}
-                    name="numberformat"
-                    id="formatted-numberformat-input"
+                    onChange={(e) => {
+                      const priceBase = parseFloat(e.target.value);
+                      const taxPercentage = values.taxesOption; // Obtener el porcentaje de impuesto según la opción seleccionada
+                      const priceSale = calculatePriceSale(priceBase, taxPercentage); // Calcular el precio total
+                      setFieldValue('priceBase', priceBase); // Actualizar el valor de Precio Base
+                      setFieldValue('priceSale', priceSale); // Actualizar el valor de Precio Total
+                    }}
+                    value={values.priceBase}
                     InputProps={{
                       startAdornment: <InputAdornment position="start">$</InputAdornment>,
                       inputComponent: NumericFormatCustom
                     }}
                   />
-                  <Icon fullWidth icon="ic:round-plus" width="60" height="60" />
+                  <Icon icon="ic:round-plus" width="60" height="60" />
 
                   <FormControl fullWidth>
-                    <InputLabel>Impuestoo</InputLabel>
-                    <Select label="Impuesto" {...getFieldProps('taxesOption')} value={values.taxesOption}>
+                    <InputLabel>Impuesto</InputLabel>
+                    <Select
+                      label="Impuesto"
+                      {...getFieldProps('taxesOption')}
+                      value={values.taxesOption === 0 ? 0 : values.taxesOption}
+                      renderValue={(selectedValue) => {
+                        const selectedTax = TAXES_OPTIONS.find((tax) => tax.percentage === selectedValue);
+                        return selectedTax ? selectedTax.name : '';
+                      }}
+                    >
                       {TAXES_OPTIONS.map((tax) => (
-                        <MenuItem key={tax.name} value={tax.name} label={tax.name}>
+                        <MenuItem key={tax.name} value={tax.percentage}>
                           {tax.name}
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
 
-                  <Icon fullWidth icon="material-symbols:equal-rounded" width="60" height="60" />
+                  <Icon icon="material-symbols:equal-rounded" width="60" height="60" />
 
                   <TextField
                     fullWidth
                     placeholder="0.00"
                     label="Precio Total"
-                    {...getFieldProps('priceSale')}
+                    onChange={(e) => {
+                      const priceSale = parseFloat(e.target.value);
+                      const taxPercentage = values.taxesOption; // Obtener el porcentaje de impuesto según la opción seleccionada
+                      const priceBase = calculatePriceBase(priceSale, taxPercentage); // Calcular el precio base
+                      setFieldValue('priceBase', priceBase); // Actualizar el valor de Precio Base
+                      setFieldValue('priceSale', priceSale); // Actualizar el valor de Precio Total
+                    }}
+                    value={values.priceSale}
                     InputProps={{
                       startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                      type: 'number'
+                      inputComponent: NumericFormatCustom
                     }}
                   />
                 </Stack>
               </Stack>
             </Card>
+            {/* Punto de venta */}
+            <Card sx={{ p: 3, mt: 4 }}>
+              <Typography variant="h4" gutterBottom>
+                Punto de venta: Inventario
+              </Typography>
+              <Divider sx={{ mb: 3, mt: 0.5 }} />
+              <Typography variant="subtitle2" gutterBottom>
+                Asigna el punto de venta donde se encuentra el producto.
+              </Typography>
+              <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+                {values.wareHouse.map((item) => (
+                  <ListItem key={item.id} sx={{ paddingLeft: 0 }}>
+                    <ListItemAvatar onClick={() => setEditWareHouse(item)}>
+                      <Avatar variant="rounded" sx={{ width: 60, height: 60 }}>
+                        <Icon width={40} height={40} icon="tabler:building-warehouse" />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      onClick={() => setEditWareHouse(item)}
+                      primary={item.name}
+                      secondary={`Cantidad: ${item.quantity ? item.quantity : 0} Cantidad minima: ${
+                        item.minQuantity ? item.minQuantity : 0
+                      }`}
+                    />
+                    <MenuCategories
+                      element={item} // Agrega esta línea
+                      handleDelete={deleteWareHouse}
+                      edit={false}
+                      view={false}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+              <PopupAssingInventory
+                setAssignWarehouse={setAssignWarehouse}
+                handleAssignInventory={handleAssignInventory}
+                warehouseEdit={warehouseEdit}
+                handleClose={handleClosePopupWarehouse}
+                open={openPopupWarehouse}
+                handleClickOpen={handleClickOpenPopupWarehouse}
+              />
+            </Card>
           </Grid>
           <Grid item xs={12} md={4}>
             <Stack spacing={3}>
               <Card sx={{ p: 3 }}>
-                <FormControlLabel
-                  control={<Switch {...getFieldProps('inStock')} checked={values.inStock} />}
-                  label="In stock"
-                  sx={{ mb: 2 }}
-                />
-
-                <Stack spacing={3}>
-                  <TextField fullWidth label="Codigo de barras" {...getFieldProps('code')} />
-                  <TextField fullWidth label="SKU" {...getFieldProps('sku')} />
-
-                  <LabelStyle>Gender</LabelStyle>
-                  <RadioGroup {...getFieldProps('gender')} row>
-                    <Stack spacing={1} direction="row">
-                      {GENDER_OPTION.map((gender) => (
-                        <FormControlLabel key={gender} value={gender} control={<Radio />} label={gender} />
-                      ))}
-                    </Stack>
-                  </RadioGroup>
-
-                  <FormControl fullWidth>
-                    <InputLabel>Category</InputLabel>
-                    <Select label="Category" native {...getFieldProps('category')} value={values.category}>
-                      {CATEGORY_OPTION.map((category) => (
-                        <optgroup key={category.group} label={category.group}>
-                          {category.classify.map((classify) => (
-                            <option key={classify} value={classify}>
-                              {classify}
-                            </option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <Autocomplete
-                    multiple
-                    freeSolo
-                    value={values.tags}
-                    onChange={(event, newValue) => {
-                      setFieldValue('tags', newValue);
-                    }}
-                    options={TAGS_OPTION.map((option) => option)}
-                    renderTags={(value, getTagProps) =>
-                      value.map((option, index) => (
-                        <Chip key={option} size="small" label={option} {...getTagProps({ index })} />
-                      ))
-                    }
-                    renderInput={(params) => <TextField label="Tags" {...params} />}
+                <Stack>
+                  <Typography variant="h5">{values.name}</Typography>
+                  {values.barCode && <Typography variant="subtitle2"> Código: {values.barCode}</Typography>}
+                  {values.sku && <Typography variant="subtitle2"> SKU: {values.sku}</Typography>}
+                  <LabelStyle>Imagen del producto</LabelStyle>
+                  {/* <UploadMultiFile
+                    showPreview
+                    maxSize={3145728}
+                    accept="image/*"
+                    files={values.images}
+                    onDrop={handleDrop}
+                    onRemove={handleRemove}
+                    onRemoveAll={handleRemoveAll}
+                    error={Boolean(touched.images && errors.images)}
+                  /> */}
+                  <UploadSingleFile
+                    showPreview
+                    maxSize={3145728}
+                    accept="image/*"
+                    file={values.images}
+                    onDrop={handleDropSingleFile}
+                    onRemove={handleRemove}
+                    onRemoveAll={handleRemoveAll}
+                    error={Boolean(touched.images && errors.images)}
                   />
+                  {touched.images && errors.images && (
+                    <FormHelperText error sx={{ px: 2 }}>
+                      {touched.images && errors.images}
+                    </FormHelperText>
+                  )}
+                </Stack>
+                <Stack sx={{ mb: 1, mt: 3 }} flexDirection="row" alignItems="center">
+                  <FormControlLabel
+                    sx={{ mr: 0.4 }}
+                    control={<Switch {...getFieldProps('state')} checked={values.state} />}
+                    label="Producto activo"
+                  />
+                  <CustomTooltip title="Vende sin unidades disponibles" />
+                </Stack>
+                <Stack sx={{ mb: 1, mt: 0 }} flexDirection="row" alignItems="center">
+                  <FormControlLabel
+                    control={<Switch {...getFieldProps('sellInNegative')} checked={values.sellInNegative} />}
+                    label="Venta en negativo"
+                    sx={{ mr: 0.4 }}
+                  />
+                  <CustomTooltip title="Vende sin unidades disponibles" />
                 </Stack>
               </Card>
 
-              <Card sx={{ p: 3 }}>
-                <Stack spacing={3} />
-
-                <FormControlLabel
-                  control={<Switch {...getFieldProps('taxes')} checked={values.taxes} />}
-                  label="Price includes taxes"
-                  sx={{ mt: 2 }}
-                />
-              </Card>
-
               <LoadingButton type="submit" fullWidth variant="contained" size="large" loading={isSubmitting}>
-                {!isEdit ? 'Create Product' : 'Save Changes'}
+                {!isEdit ? 'Crear producto' : 'Save Changes'}
               </LoadingButton>
             </Stack>
           </Grid>
         </Grid>
       </Form>
+      <PopupCreateBrand open={openPopupBrand} handleClose={handleCloseCreateBrand} />
+      <PopupCreateCategory open={openPopupCategory} handleClose={handleCloseCreateCategory} />
       {/* <Webcam ref={webcamRef} /> */}
     </FormikProvider>
   );
