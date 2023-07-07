@@ -222,7 +222,7 @@ function AuthProvider({ children }) {
           name: firstName,
           lastname: lastName,
           email,
-          phone: `+${tel}`,
+          phone: tel,
           dni: dniString,
           company: { id: null },
           photo:
